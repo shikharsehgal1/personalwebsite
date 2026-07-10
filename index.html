@@ -66,29 +66,48 @@
     }
 
     @keyframes bob {
-      0%, 100% { transform: translateY(0) rotate(-0.7deg); }
-      50%      { transform: translateY(-13px) rotate(0.8deg); }
+      0%, 100% { transform: translateY(0) rotate(-1.3deg); }
+      50%      { transform: translateY(-16px) rotate(1.4deg); }
     }
 
     .mast {
       position: absolute;
-      top: -72px;
+      top: -158px;
       left: 50%;
-      width: 4px;
-      height: 80px;
-      margin-left: -2px;
-      background: linear-gradient(#7a5b42, #3a2a1e);
-      border-radius: 2px;
+      width: 6px;
+      height: 166px;
+      margin-left: -3px;
+      background: linear-gradient(#8a6a4d, #3a2a1e);
+      border-radius: 3px;
       z-index: 0;
+    }
+
+    .sail {
+      position: absolute;
+      top: -142px;
+      left: calc(50% + 3px);
+      width: 150px;
+      height: 134px;
+      background: linear-gradient(105deg, #f6efdd, #e4d7ba 70%, #d5c4a1);
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+      transform-origin: left bottom;
+      animation: billow 4.5s ease-in-out infinite alternate;
+      box-shadow: inset -6px -8px 18px rgba(120, 95, 60, 0.25);
+      z-index: 0;
+    }
+
+    @keyframes billow {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(1.08) skewY(1.2deg); }
     }
 
     .flag {
       position: absolute;
-      top: -70px;
-      left: calc(50% + 2px);
+      top: -156px;
+      left: calc(50% + 3px);
       width: 0;
       height: 0;
-      border-left: 40px solid #c9584a;
+      border-left: 44px solid #c9584a;
       border-top: 11px solid transparent;
       border-bottom: 11px solid transparent;
       transform-origin: left center;
@@ -102,13 +121,63 @@
     }
 
     .hull {
-      width: 90%;
-      height: 48px;
+      position: relative;
+      width: 94%;
+      height: 64px;
       margin: -8px auto 0;
-      background: linear-gradient(#6b4f3a, #2e2118);
-      border-top: 5px solid #8a6a4d;
-      border-radius: 0 0 160px 160px / 0 0 110px 110px;
-      box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.35);
+      background:
+        radial-gradient(circle at 22% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
+        radial-gradient(circle at 50% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
+        radial-gradient(circle at 78% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
+        repeating-linear-gradient(180deg, #6b4f3a 0 14px, #52392a 14px 16px),
+        linear-gradient(#6b4f3a, #2e2118);
+      border-top: 6px solid #8a6a4d;
+      border-radius: 0 0 200px 200px / 0 0 130px 130px;
+      box-shadow: inset 0 12px 22px rgba(0, 0, 0, 0.4), 0 6px 14px rgba(4, 7, 18, 0.5);
+    }
+
+    /* --- the goal ----------------------------------------------------- */
+    #goal {
+      position: fixed;
+      left: 18px;
+      top: 50%;
+      z-index: 1;
+      width: 76px;
+      height: 210px;
+      border: 6px solid #f6f3ea;
+      border-right: none;
+      border-radius: 12px 0 0 12px;
+      background:
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.3) 0 1.5px, transparent 1.5px 13px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.3) 0 1.5px, transparent 1.5px 13px);
+      box-shadow: 0 0 24px rgba(246, 243, 234, 0.25), inset 0 0 30px rgba(4, 7, 18, 0.3);
+      animation: goalbob 5.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes goalbob {
+      0%, 100% { transform: translateY(calc(-50% + 6px)) rotate(-0.6deg); }
+      50%      { transform: translateY(calc(-50% - 6px)) rotate(0.6deg); }
+    }
+
+    #goal.scored {
+      box-shadow: 0 0 60px rgba(246, 243, 234, 0.9), inset 0 0 40px rgba(246, 243, 234, 0.5);
+      border-color: #ffffff;
+    }
+
+    .goal-label {
+      position: absolute;
+      top: calc(100% + 14px);
+      left: -6px;
+      width: 130px;
+      color: rgba(243, 236, 221, 0.85);
+      font-size: 0.88rem;
+      font-style: italic;
+      text-shadow: 0 1px 8px rgba(10, 12, 30, 0.6);
+    }
+
+    @media (max-width: 900px) {
+      #goal { display: none; } /* no keyboard, no game */
     }
 
     .wake {
@@ -252,14 +321,16 @@
 <body>
   <canvas id="fluid"></canvas>
   <div id="ball"></div>
+  <div id="goal"><div class="goal-label">score here to email me</div></div>
 
   <button id="music-btn" aria-pressed="false">&#9834; play music</button>
-  <div id="hint">arrow keys / WASD move the ball &mdash; click &amp; drag to stir the lake</div>
+  <div id="hint">arrow keys / WASD move the ball &mdash; score in the goal to email me &mdash; click &amp; drag to stir the lake</div>
 
   <div class="page">
     <div class="boat-wrap">
       <div class="boat">
         <div class="mast"></div>
+        <div class="sail"></div>
         <div class="flag"></div>
         <main class="card">
       <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
@@ -510,9 +581,11 @@
     // ====================================================================
     (function () {
       const el = document.getElementById('ball');
+      const goal = document.getElementById('goal');
       const R = 14;
-      let x = innerWidth * 0.22, y = innerHeight * 0.72;
+      let x = innerWidth * 0.18, y = innerHeight * 0.8;
       let vx = 0, vy = 0;
+      let scored = false;
       const keys = {};
       const held = (...ks) => ks.some((k) => keys[k]);
 
@@ -553,6 +626,25 @@
         if (x > innerWidth - R) { x = innerWidth - R; vx = -Math.abs(vx) * 0.8; }
         if (y < R) { y = R; vy = Math.abs(vy) * 0.8; }
         if (y > innerHeight - R) { y = innerHeight - R; vy = -Math.abs(vy) * 0.8; }
+
+        // GOAL: ball fully inside the net -> open email. The rect follows
+        // the goal's bobbing animation, so the score zone bobs with it.
+        if (!scored) {
+          const g = goal.getBoundingClientRect();
+          if (g.width > 0 && x < g.right - R && y > g.top + R && y < g.bottom - R) {
+            scored = true;
+            goal.classList.add('scored');
+            addRipple(x, y, 0.7);
+            addRipple(g.left, (g.top + g.bottom) / 2, 0.5);
+            vx = 0; vy = 0;
+            setTimeout(() => {
+              window.location.href = 'mailto:shikharsehgal@uchicago.edu';
+              x = innerWidth * 0.18; y = innerHeight * 0.8; // reset for another round
+              goal.classList.remove('scored');
+              scored = false;
+            }, 800);
+          }
+        }
 
         // a fast ball leaves a wake in the lake
         const speed = Math.hypot(vx, vy);
