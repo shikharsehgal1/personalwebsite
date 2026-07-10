@@ -257,20 +257,65 @@
       margin: 32px 0 22px;
     }
 
-    .links {
+    /* --- floating logo buoys ------------------------------------------ */
+    .buoy {
+      position: fixed;
+      z-index: 1;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
       display: flex;
-      flex-wrap: wrap;
-      gap: 24px;
-      margin-bottom: 16px;
-    }
-
-    .links a {
-      font-size: 0.98rem;
-      color: #5a6070;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(4, 7, 18, 0.45), 0 0 20px rgba(241, 225, 195, 0.15);
       text-decoration: none;
+      animation: buoybob 6s ease-in-out infinite;
+      transition: scale 0.15s ease;
     }
 
-    .links a:hover { color: #1e2230; opacity: 1; }
+    .buoy:hover { scale: 1.12; }
+
+    .buoy::after { /* its little wake on the water */
+      content: '';
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      width: 54px;
+      height: 12px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(4, 7, 18, 0.5), transparent 70%);
+      filter: blur(4px);
+    }
+
+    @keyframes buoybob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-9px) rotate(3deg); }
+    }
+
+    .buoy svg { width: 30px; height: 30px; }
+
+    .buoy .tedx {
+      font-family: Helvetica, Arial, sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.6px;
+      color: #eb0028;
+    }
+
+    #buoy-github   { right: 9%;  top: 24%; animation-delay: -1.2s; }
+    #buoy-substack { right: 5%;  top: 50%; animation-delay: -3.1s; }
+    #buoy-tedx     { right: 12%; top: 74%; animation-delay: -4.6s; }
+
+    @media (max-width: 900px) {
+      #buoy-github   { right: auto; top: auto; left: calc(50% - 100px); bottom: 28px; }
+      #buoy-substack { right: auto; top: auto; left: calc(50% - 30px);  bottom: 28px; }
+      #buoy-tedx     { right: auto; top: auto; left: calc(50% + 40px);  bottom: 28px; }
+    }
 
     .made-in {
       font-size: 0.92rem;
@@ -324,6 +369,16 @@
   <div id="ball"></div>
   <div id="goal"><div class="goal-label">score here to email me</div></div>
 
+  <a id="buoy-github" class="buoy" href="https://github.com/shikharsehgal1" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+    <svg viewBox="0 0 16 16" fill="#24292f" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+  </a>
+  <a id="buoy-substack" class="buoy" href="https://substack.com/@shikharsehgal" target="_blank" rel="noopener" aria-label="Substack" title="Substack">
+    <svg viewBox="0 0 448 511.47" fill="#ff6719" aria-hidden="true"><path d="M0 0h448v62.8H0V0zm0 114.54h448v62.8H0v-62.8zm0 114.54h448v282.39L224 385.81 0 511.47V229.08z"/></svg>
+  </a>
+  <a id="buoy-tedx" class="buoy" href="https://youtu.be/oBvPqSaLvMk" target="_blank" rel="noopener" aria-label="TEDx talk" title="TEDx talk">
+    <span class="tedx">TEDx</span>
+  </a>
+
   <button id="music-btn" aria-pressed="false">&#9834; play music</button>
   <div id="hint">arrow keys / WASD move the ball &mdash; score in the goal to email me &mdash; click &amp; drag to stir the lake</div>
 
@@ -341,13 +396,6 @@
 
       <hr class="rule" />
 
-      <nav class="links">
-        <a href="mailto:shikharsehgal@uchicago.edu">Email</a>
-        <a href="https://github.com/shikharsehgal1" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://substack.com/@shikharsehgal" target="_blank" rel="noopener">Substack</a>
-        <a href="https://youtu.be/oBvPqSaLvMk" target="_blank" rel="noopener">TEDx</a>
-      </nav>
           <div class="made-in">Made in Mumbai &bull; Hong Kong &bull; Chicago</div>
         </main>
         <div class="hull"></div>
@@ -561,7 +609,7 @@
       let stirring = false;
       let lastStir = 0;
       addEventListener('pointerdown', (e) => {
-        if (e.target.closest('.card, #music-btn')) return;
+        if (e.target.closest('.card, #music-btn, .buoy')) return;
         stirring = true;
         addRipple(e.clientX, e.clientY, 0.5);
       });
