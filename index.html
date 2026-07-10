@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shikhar Sehgal</title>
+  <meta name="description" content="Shikhar Sehgal — Stats and CS at the University of Chicago." />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: #0b0e1a; /* fallback while shader loads / if WebGL unavailable */
+    }
+
+    #fluid {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      max-width: 620px;
+      width: 100%;
+      padding: 56px 48px 40px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 24px 80px rgba(10, 12, 30, 0.35);
+      color: #1e2230;
+    }
+
+    .card p {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin-bottom: 1.4rem;
+      color: #2a2f42;
+    }
+
+    .card a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .card a:hover { opacity: 0.7; }
+
+    .contact-btn {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 13px 30px;
+      border-radius: 999px;
+      background: #1e2230;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .contact-btn:hover {
+      opacity: 1;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(10, 12, 30, 0.35);
+    }
+
+    .rule {
+      border: none;
+      border-top: 1px solid rgba(30, 34, 48, 0.15);
+      margin: 36px 0 24px;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    .links a {
+      font-size: 0.95rem;
+      color: #5a6070;
+      text-decoration: none;
+    }
+
+    .links a:hover { color: #1e2230; opacity: 1; }
+
+    .made-in {
+      font-size: 0.9rem;
+      color: #7a8090;
+    }
+
+    @media (max-width: 520px) {
+      .card { padding: 40px 28px 32px; }
+      .card p { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="fluid"></canvas>
+
+  <div class="page">
+    <main class="card">
+      <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
+      <p>To learn more about my interests, check out my <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+      <a class="contact-btn" href="mailto:shikharsehgal@uchicago.edu">Contact Me</a>
+
+      <hr class="rule" />
+
+      <nav class="links">
+        <a href="mailto:shikharsehgal@uchicago.edu">Email</a>
+        <a href="https://github.com/shikharsehgal1" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://substack.com/@shikharsehgal" target="_blank" rel="noopener">Substack</a>
+        <a href="https://youtu.be/oBvPqSaLvMk" target="_blank" rel="noopener">TEDx</a>
+      </nav>
+      <div class="made-in">Made in Mumbai &bull; Hong Kong &bull; Chicago</div>
+    </main>
+  </div>
+
+  <script>
+    // Fluid background: domain-warped noise in a fragment shader, tuned to look
+    // like Saffman–Taylor viscous fingering — thin tendrils of one fluid pushing
+    // into another, slowly churning.
+    (function () {
+      const canvas = document.getElementById('fluid');
+      const gl = canvas.getContext('webgl', { antialias: false, depth: false, stencil: false });
+      if (!gl) return; // CSS fallback background stays
+
+      const vertSrc = `
+        attribute vec2 a_pos;
+        void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+      `;
+
+      const fragSrc = `
+        precision highp float;
+        uniform vec2 u_res;
+        uniform float u_time;
+        uniform vec2 u_mouse;
+
+        // --- value noise + fbm -------------------------------------------
+        float hash(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
+        }
+
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+        }
+
+        float fbm(vec2 p) {
+          float v = 0.0;
+          float amp = 0.5;
+          mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
+          for (int i = 0; i < 6; i++) {
+            v += amp * noise(p);
+            p = rot * p * 2.02;
+            amp *= 0.5;
+          }
+          return v;
+        }
+
+        // --- iterated domain warp: the fingering comes from warping the
+        // coordinate space with fbm of itself, twice --------------------
+        float pattern(vec2 p, float t, out vec2 q, out vec2 r) {
+          q = vec2(fbm(p + vec2(0.0, 0.0) + 0.05 * t),
+                   fbm(p + vec2(5.2, 1.3) - 0.04 * t));
+          r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2) + 0.08 * t),
+                   fbm(p + 4.0 * q + vec2(8.3, 2.8) - 0.06 * t));
+          return fbm(p + 4.0 * r);
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_res.xy;
+          vec2 p = (gl_FragCoord.xy - 0.5 * u_res.xy) / min(u_res.x, u_res.y);
+          p *= 2.2;
+
+          // gentle pull toward the pointer
+          vec2 m = (u_mouse - 0.5) * 0.6;
+          p += m * 0.35;
+
+          float t = u_time * 0.35;
+          vec2 q, r;
+          float f = pattern(p, t, q, r);
+
+          // palette: deep ink -> violet -> teal -> warm cream tendrils
+          vec3 c1 = vec3(0.043, 0.055, 0.125); // deep ink
+          vec3 c2 = vec3(0.231, 0.180, 0.478); // violet
+          vec3 c3 = vec3(0.075, 0.478, 0.502); // teal
+          vec3 c4 = vec3(0.945, 0.882, 0.780); // cream
+
+          vec3 col = mix(c1, c2, smoothstep(0.15, 0.65, f));
+          col = mix(col, c3, smoothstep(0.35, 0.9, length(q) * 0.8));
+          col = mix(col, c4, smoothstep(0.55, 0.95, r.x) * 0.55);
+
+          // sharpen the fluid–fluid interface into finger-like filaments
+          float edge = abs(f - 0.5);
+          col += c4 * 0.22 * smoothstep(0.06, 0.0, edge);
+
+          // subtle vignette so the card pops
+          float vig = smoothstep(1.6, 0.4, length(p - m * 0.35));
+          col *= mix(0.75, 1.0, vig);
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+
+      function compile(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          console.error(gl.getShaderInfoLog(s));
+          return null;
+        }
+        return s;
+      }
+
+      const vs = compile(gl.VERTEX_SHADER, vertSrc);
+      const fs = compile(gl.FRAGMENT_SHADER, fragSrc);
+      if (!vs || !fs) return;
+
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs);
+      gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'a_pos');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      const uRes = gl.getUniformLocation(prog, 'u_res');
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+      // Render at reduced resolution — the pattern is soft, and this keeps
+      // fans quiet on retina displays.
+      const SCALE = 0.5;
+      function resize() {
+        canvas.width = Math.floor(innerWidth * devicePixelRatio * SCALE);
+        canvas.height = Math.floor(innerHeight * devicePixelRatio * SCALE);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      resize();
+      addEventListener('resize', resize);
+
+      let mouseX = 0.5, mouseY = 0.5;      // target
+      let smX = 0.5, smY = 0.5;            // smoothed
+      addEventListener('pointermove', (e) => {
+        mouseX = e.clientX / innerWidth;
+        mouseY = 1.0 - e.clientY / innerHeight;
+      });
+
+      const start = performance.now();
+      function frame(now) {
+        smX += (mouseX - smX) * 0.03;
+        smY += (mouseY - smY) * 0.03;
+        gl.uniform2f(uRes, canvas.width, canvas.height);
+        gl.uniform1f(uTime, (now - start) / 1000);
+        gl.uniform2f(uMouse, smX, smY);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
