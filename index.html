@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Shikhar Sehgal</title>
   <meta name="description" content="Shikhar Sehgal — Stats and CS at the University of Chicago." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
       -webkit-font-smoothing: antialiased;
       background: #0b0e1a; /* fallback while shader loads / if WebGL unavailable */
+      overflow: hidden;
     }
 
     #fluid {
@@ -22,22 +26,114 @@
       height: 100%;
       display: block;
       z-index: 0;
+      cursor: crosshair;
+    }
+
+    #ball {
+      position: fixed;
+      z-index: 1;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle at 35% 30%, #fff7e8, #f1e1c3 45%, #c9a86a 100%);
+      box-shadow: 0 0 18px 4px rgba(241, 225, 195, 0.55), 0 0 60px 12px rgba(241, 225, 195, 0.2);
+      will-change: transform;
     }
 
     .page {
       position: relative;
-      z-index: 1;
-      min-height: 100%;
+      z-index: 2;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      pointer-events: none; /* let drags on empty space stir the lake */
+    }
+
+    /* --- the boat ---------------------------------------------------- */
+    .boat-wrap {
+      position: relative;
+      max-width: 640px;
+      width: 100%;
+    }
+
+    .boat {
+      position: relative;
+      animation: bob 7s ease-in-out infinite;
+      transform-origin: 50% 100%;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-0.7deg); }
+      50%      { transform: translateY(-13px) rotate(0.8deg); }
+    }
+
+    .mast {
+      position: absolute;
+      top: -72px;
+      left: 50%;
+      width: 4px;
+      height: 80px;
+      margin-left: -2px;
+      background: linear-gradient(#7a5b42, #3a2a1e);
+      border-radius: 2px;
+      z-index: 0;
+    }
+
+    .flag {
+      position: absolute;
+      top: -70px;
+      left: calc(50% + 2px);
+      width: 0;
+      height: 0;
+      border-left: 40px solid #c9584a;
+      border-top: 11px solid transparent;
+      border-bottom: 11px solid transparent;
+      transform-origin: left center;
+      animation: flutter 1.8s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+
+    @keyframes flutter {
+      from { transform: scaleY(1) skewY(0deg); }
+      to   { transform: scaleY(0.85) skewY(-3deg); }
+    }
+
+    .hull {
+      width: 90%;
+      height: 48px;
+      margin: -8px auto 0;
+      background: linear-gradient(#6b4f3a, #2e2118);
+      border-top: 5px solid #8a6a4d;
+      border-radius: 0 0 160px 160px / 0 0 110px 110px;
+      box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.35);
+    }
+
+    .wake {
+      position: absolute;
+      left: 50%;
+      bottom: -28px;
+      width: 82%;
+      height: 24px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(4, 7, 18, 0.55), transparent 70%);
+      filter: blur(7px);
+      animation: wake 7s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes wake {
+      0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.85; }
+      50%      { transform: translateX(-50%) scaleX(0.9); opacity: 0.55; }
     }
 
     .card {
-      max-width: 620px;
+      position: relative;
+      z-index: 1;
       width: 100%;
-      padding: 56px 48px 40px;
+      padding: 52px 48px 36px;
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.82);
       backdrop-filter: blur(18px) saturate(140%);
@@ -45,12 +141,14 @@
       border: 1px solid rgba(255, 255, 255, 0.5);
       box-shadow: 0 24px 80px rgba(10, 12, 30, 0.35);
       color: #1e2230;
+      pointer-events: auto;
     }
 
     .card p {
-      font-size: 1.25rem;
+      font-size: 1.28rem;
+      font-weight: 340;
       line-height: 1.6;
-      margin-bottom: 1.4rem;
+      margin-bottom: 1.35rem;
       color: #2a2f42;
     }
 
@@ -64,15 +162,16 @@
 
     .contact-btn {
       display: inline-block;
-      margin-top: 4px;
-      padding: 13px 30px;
+      margin-top: 2px;
+      padding: 13px 32px;
       border-radius: 999px;
       background: #1e2230;
       color: #ffffff !important;
       text-decoration: none !important;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.01em;
+      font-size: 1.05rem;
+      font-weight: 500;
+      font-style: italic;
+      letter-spacing: 0.02em;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
@@ -85,18 +184,18 @@
     .rule {
       border: none;
       border-top: 1px solid rgba(30, 34, 48, 0.15);
-      margin: 36px 0 24px;
+      margin: 32px 0 22px;
     }
 
     .links {
       display: flex;
       flex-wrap: wrap;
       gap: 24px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .links a {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       color: #5a6070;
       text-decoration: none;
     }
@@ -104,23 +203,68 @@
     .links a:hover { color: #1e2230; opacity: 1; }
 
     .made-in {
-      font-size: 0.9rem;
+      font-size: 0.92rem;
+      font-style: italic;
       color: #7a8090;
     }
 
-    @media (max-width: 520px) {
-      .card { padding: 40px 28px 32px; }
-      .card p { font-size: 1.1rem; }
+    #music-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 3;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #f3ecdd;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-style: italic;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    #music-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+    #hint {
+      position: fixed;
+      left: 20px;
+      bottom: 16px;
+      z-index: 3;
+      color: rgba(243, 236, 221, 0.75);
+      font-size: 0.88rem;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      text-shadow: 0 1px 8px rgba(10, 12, 30, 0.6);
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 38px 26px 30px; }
+      .card p { font-size: 1.12rem; }
+      #hint { display: none; }
     }
   </style>
 </head>
 <body>
   <canvas id="fluid"></canvas>
+  <div id="ball"></div>
+
+  <button id="music-btn" aria-pressed="false">&#9834; play music</button>
+  <div id="hint">arrow keys / WASD move the ball &mdash; click &amp; drag to stir the lake</div>
 
   <div class="page">
-    <main class="card">
+    <div class="boat-wrap">
+      <div class="boat">
+        <div class="mast"></div>
+        <div class="flag"></div>
+        <main class="card">
       <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
-      <p>To learn more about my interests, check out my <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+      <p>For my professional interests, check out my <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+      <p>Outside of that, I'm interested in travel, making music, investing, poker, tennis, squash, boxing, lifting, swimming, and consumer apps.</p>
       <a class="contact-btn" href="mailto:shikharsehgal@uchicago.edu">Contact Me</a>
 
       <hr class="rule" />
@@ -132,14 +276,25 @@
         <a href="https://substack.com/@shikharsehgal" target="_blank" rel="noopener">Substack</a>
         <a href="https://youtu.be/oBvPqSaLvMk" target="_blank" rel="noopener">TEDx</a>
       </nav>
-      <div class="made-in">Made in Mumbai &bull; Hong Kong &bull; Chicago</div>
-    </main>
+          <div class="made-in">Made in Mumbai &bull; Hong Kong &bull; Chicago</div>
+        </main>
+        <div class="hull"></div>
+      </div>
+      <div class="wake"></div>
+    </div>
   </div>
 
   <script>
-    // Fluid background: domain-warped noise in a fragment shader, tuned to look
-    // like Saffman–Taylor viscous fingering — thin tendrils of one fluid pushing
-    // into another, slowly churning.
+    // ====================================================================
+    // Fluid lake: domain-warped noise shader (Saffman–Taylor-style
+    // fingering) + ripple uniforms so pointer drags and the ball can
+    // stir the fluid.
+    // ====================================================================
+    const NRIP = 10;
+    const ripples = [];           // {x, y, t, s} in shader space
+    let addRipple = () => {};     // bound once GL is ready
+    let shaderTime = () => 0;
+
     (function () {
       const canvas = document.getElementById('fluid');
       const gl = canvas.getContext('webgl', { antialias: false, depth: false, stencil: false });
@@ -155,8 +310,8 @@
         uniform vec2 u_res;
         uniform float u_time;
         uniform vec2 u_mouse;
+        uniform vec4 u_rip[${NRIP}]; // x, y, birth time, strength
 
-        // --- value noise + fbm -------------------------------------------
         float hash(vec2 p) {
           p = fract(p * vec2(123.34, 456.21));
           p += dot(p, p + 45.32);
@@ -186,8 +341,6 @@
           return v;
         }
 
-        // --- iterated domain warp: the fingering comes from warping the
-        // coordinate space with fbm of itself, twice --------------------
         float pattern(vec2 p, float t, out vec2 q, out vec2 r) {
           q = vec2(fbm(p + vec2(0.0, 0.0) + 0.05 * t),
                    fbm(p + vec2(5.2, 1.3) - 0.04 * t));
@@ -197,7 +350,6 @@
         }
 
         void main() {
-          vec2 uv = gl_FragCoord.xy / u_res.xy;
           vec2 p = (gl_FragCoord.xy - 0.5 * u_res.xy) / min(u_res.x, u_res.y);
           p *= 2.2;
 
@@ -205,11 +357,21 @@
           vec2 m = (u_mouse - 0.5) * 0.6;
           p += m * 0.35;
 
+          // stirring: each ripple swirls + pushes the domain, fading in time
+          for (int i = 0; i < ${NRIP}; i++) {
+            vec4 rp = u_rip[i];
+            float age = u_time - rp.z;
+            if (rp.w > 0.0 && age >= 0.0) {
+              vec2 d = p - rp.xy;
+              float amp = rp.w * exp(-age * 0.9) * exp(-dot(d, d) * 4.0);
+              p += vec2(-d.y, d.x) * amp + d * amp * 0.5;
+            }
+          }
+
           float t = u_time * 0.35;
           vec2 q, r;
           float f = pattern(p, t, q, r);
 
-          // palette: deep ink -> violet -> teal -> warm cream tendrils
           vec3 c1 = vec3(0.043, 0.055, 0.125); // deep ink
           vec3 c2 = vec3(0.231, 0.180, 0.478); // violet
           vec3 c3 = vec3(0.075, 0.478, 0.502); // teal
@@ -219,11 +381,9 @@
           col = mix(col, c3, smoothstep(0.35, 0.9, length(q) * 0.8));
           col = mix(col, c4, smoothstep(0.55, 0.95, r.x) * 0.55);
 
-          // sharpen the fluid–fluid interface into finger-like filaments
           float edge = abs(f - 0.5);
           col += c4 * 0.22 * smoothstep(0.06, 0.0, edge);
 
-          // subtle vignette so the card pops
           float vig = smoothstep(1.6, 0.4, length(p - m * 0.35));
           col *= mix(0.75, 1.0, vig);
 
@@ -262,10 +422,9 @@
       const uRes = gl.getUniformLocation(prog, 'u_res');
       const uTime = gl.getUniformLocation(prog, 'u_time');
       const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+      const uRip = gl.getUniformLocation(prog, 'u_rip');
 
-      // Render at reduced resolution — the pattern is soft, and this keeps
-      // fans quiet on retina displays.
-      const SCALE = 0.5;
+      const SCALE = 0.5; // render at half res; the pattern is soft anyway
       function resize() {
         canvas.width = Math.floor(innerWidth * devicePixelRatio * SCALE);
         canvas.height = Math.floor(innerHeight * devicePixelRatio * SCALE);
@@ -274,24 +433,243 @@
       resize();
       addEventListener('resize', resize);
 
-      let mouseX = 0.5, mouseY = 0.5;      // target
-      let smX = 0.5, smY = 0.5;            // smoothed
+      let mouseX = 0.5, mouseY = 0.5;
+      let smX = 0.5, smY = 0.5;
       addEventListener('pointermove', (e) => {
         mouseX = e.clientX / innerWidth;
         mouseY = 1.0 - e.clientY / innerHeight;
       });
 
       const start = performance.now();
-      function frame(now) {
+      const now = () => (performance.now() - start) / 1000;
+      shaderTime = now;
+
+      // client pixel coords -> the shader's p-space
+      function toShaderSpace(cx, cy) {
+        const mn = Math.min(innerWidth, innerHeight);
+        return {
+          x: ((cx - 0.5 * innerWidth) / mn) * 2.2,
+          y: ((0.5 * innerHeight - cy) / mn) * 2.2,
+        };
+      }
+
+      addRipple = (cx, cy, strength) => {
+        const { x, y } = toShaderSpace(cx, cy);
+        ripples.push({ x, y, t: now(), s: strength });
+        while (ripples.length > NRIP) ripples.shift();
+      };
+
+      const ripData = new Float32Array(NRIP * 4);
+      function frame() {
         smX += (mouseX - smX) * 0.03;
         smY += (mouseY - smY) * 0.03;
+
+        ripData.fill(0);
+        for (let i = 0; i < ripples.length; i++) {
+          ripData[i * 4] = ripples[i].x;
+          ripData[i * 4 + 1] = ripples[i].y;
+          ripData[i * 4 + 2] = ripples[i].t;
+          ripData[i * 4 + 3] = ripples[i].s;
+        }
+
         gl.uniform2f(uRes, canvas.width, canvas.height);
-        gl.uniform1f(uTime, (now - start) / 1000);
+        gl.uniform1f(uTime, now());
         gl.uniform2f(uMouse, smX, smY);
+        gl.uniform4fv(uRip, ripData);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+    })();
+
+    // ====================================================================
+    // Stir the lake: click & drag anywhere on the background
+    // ====================================================================
+    (function () {
+      let stirring = false;
+      let lastStir = 0;
+      addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.card, #music-btn')) return;
+        stirring = true;
+        addRipple(e.clientX, e.clientY, 0.5);
+      });
+      addEventListener('pointermove', (e) => {
+        if (!stirring) return;
+        const t = performance.now();
+        if (t - lastStir > 50) {
+          lastStir = t;
+          addRipple(e.clientX, e.clientY, 0.35);
+        }
+      });
+      addEventListener('pointerup', () => { stirring = false; });
+    })();
+
+    // ====================================================================
+    // Playable ball: arrow keys / WASD, momentum + wall bounces, and it
+    // stirs the fluid as it swims through it.
+    // ====================================================================
+    (function () {
+      const el = document.getElementById('ball');
+      const R = 14;
+      let x = innerWidth * 0.22, y = innerHeight * 0.72;
+      let vx = 0, vy = 0;
+      const keys = {};
+      const held = (...ks) => ks.some((k) => keys[k]);
+
+      addEventListener('keydown', (e) => {
+        keys[e.key.toLowerCase()] = true;
+        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+      });
+      addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+      let lastWake = 0;
+      let last = performance.now();
+      function step(now) {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+
+        const ACC = 900;
+        if (held('arrowleft', 'a')) vx -= ACC * dt;
+        if (held('arrowright', 'd')) vx += ACC * dt;
+        if (held('arrowup', 'w')) vy -= ACC * dt;
+        if (held('arrowdown', 's')) vy += ACC * dt;
+
+        // lazy current so the ball drifts even when idle
+        const t = shaderTime();
+        vx += Math.sin(t * 0.4 + y * 0.004) * 18 * dt;
+        vy += Math.cos(t * 0.3 + x * 0.004) * 18 * dt;
+
+        // viscous drag — it's swimming, not rolling
+        const drag = Math.exp(-1.6 * dt);
+        vx *= drag; vy *= drag;
+
+        x += vx * dt;
+        y += vy * dt;
+
+        // bounce off the viewport walls
+        if (x < R) { x = R; vx = Math.abs(vx) * 0.8; }
+        if (x > innerWidth - R) { x = innerWidth - R; vx = -Math.abs(vx) * 0.8; }
+        if (y < R) { y = R; vy = Math.abs(vy) * 0.8; }
+        if (y > innerHeight - R) { y = innerHeight - R; vy = -Math.abs(vy) * 0.8; }
+
+        // a fast ball leaves a wake in the lake
+        const speed = Math.hypot(vx, vy);
+        if (speed > 120 && now - lastWake > 120) {
+          lastWake = now;
+          addRipple(x, y, Math.min(0.3, speed / 1500));
+        }
+
+        el.style.transform = `translate(${x - R}px, ${y - R}px)`;
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    })();
+
+    // ====================================================================
+    // Music: a small generative ambient piece via Web Audio — slow pads
+    // cycling through a dreamy progression, with pentatonic plucks
+    // echoing over the top. No audio files, nothing to license.
+    // ====================================================================
+    (function () {
+      const btn = document.getElementById('music-btn');
+      let ctx = null;
+      let master, delay;
+      let timers = [];
+      let on = false;
+
+      const CHORDS = [
+        [220.0, 261.63, 329.63, 493.88],  // Am9
+        [174.61, 220.0, 261.63, 329.63],  // Fmaj7
+        [130.81, 196.0, 246.94, 329.63],  // Cmaj7
+        [196.0, 246.94, 293.66, 440.0],   // G add9
+      ];
+      const PLUCKS = [440.0, 523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+
+      function playPad(freqs) {
+        const t0 = ctx.currentTime;
+        const pad = ctx.createGain();
+        pad.gain.setValueAtTime(0, t0);
+        pad.gain.linearRampToValueAtTime(0.05, t0 + 3.5);
+        pad.gain.setValueAtTime(0.05, t0 + 6.5);
+        pad.gain.linearRampToValueAtTime(0, t0 + 10);
+        pad.connect(master);
+        freqs.forEach((f) => {
+          [0, 4].forEach((cents) => { // two detuned voices per note
+            const o = ctx.createOscillator();
+            o.type = 'sine';
+            o.frequency.value = f;
+            o.detune.value = cents;
+            o.connect(pad);
+            o.start(t0);
+            o.stop(t0 + 10.5);
+          });
+        });
+      }
+
+      function playPluck() {
+        const t0 = ctx.currentTime;
+        const f = PLUCKS[Math.floor(Math.random() * PLUCKS.length)];
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.09, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.8);
+        const o = ctx.createOscillator();
+        o.type = 'triangle';
+        o.frequency.value = f;
+        o.connect(g);
+        g.connect(master);
+        g.connect(delay);
+        o.start(t0);
+        o.stop(t0 + 2);
+      }
+
+      function start() {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        ctx.resume();
+
+        master = ctx.createGain();
+        master.gain.value = 0.9;
+        master.connect(ctx.destination);
+
+        delay = ctx.createDelay(1.5);
+        delay.delayTime.value = 0.55;
+        const fb = ctx.createGain();
+        fb.gain.value = 0.42;
+        delay.connect(fb);
+        fb.connect(delay);
+        delay.connect(master);
+
+        let chord = 0;
+        playPad(CHORDS[chord]);
+        timers.push(setInterval(() => {
+          chord = (chord + 1) % CHORDS.length;
+          playPad(CHORDS[chord]);
+        }, 9000));
+
+        function schedulePluck() {
+          playPluck();
+          timers.push(setTimeout(schedulePluck, 1800 + Math.random() * 2600));
+        }
+        timers.push(setTimeout(schedulePluck, 1500));
+      }
+
+      function stop() {
+        timers.forEach((t) => { clearInterval(t); clearTimeout(t); });
+        timers = [];
+        if (master) {
+          const t0 = ctx.currentTime;
+          master.gain.linearRampToValueAtTime(0, t0 + 0.8);
+          setTimeout(() => ctx.suspend(), 900);
+        }
+      }
+
+      btn.addEventListener('click', () => {
+        on = !on;
+        btn.setAttribute('aria-pressed', String(on));
+        btn.innerHTML = on ? '&#9835; sound on' : '&#9834; play music';
+        if (on) start(); else stop();
+      });
     })();
   </script>
 </body>
