@@ -910,7 +910,7 @@
       const el = document.getElementById('ball');
       const goal = document.getElementById('goal');
       const R = 14;
-      const crashTargets = [...document.querySelectorAll('.buoy, .hull')];
+      const crashTargets = [...document.querySelectorAll('.buoy')]; // only the little link boats — the yacht is harmless
       let crashed = false;
 
       // the dock's wooden arms and back are solid: the only way in is the
@@ -1113,7 +1113,7 @@
           }
         }
 
-        // CRASH: ram another boat (a link boat or the yacht's hull) at speed
+        // CRASH: ram a link boat at speed (the yacht never explodes)
         // and both go up in flames... then you get rickrolled.
         if (!crashed && !scored) {
           const sp = Math.hypot(vx, vy);
