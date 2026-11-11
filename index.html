@@ -1026,6 +1026,27 @@
         }
       }
 
+      // somewhere on open water to (re)launch the dinghy: clear of the yacht,
+      // the link boats, the dock and the screen edges
+      function safeSpawn() {
+        const W = innerWidth, H = innerHeight, sh = yachtShape();
+        const g = goal.getBoundingClientRect();
+        const boats = crashTargets.map((t) => t.getBoundingClientRect());
+        const clear = (px, py) => {
+          if (sh.polys.some((poly) => circlePoly(px, py, R + 40, poly))) return false;
+          if (boats.some((b) => b.width > 0 && px > b.left - 60 && px < b.right + 60 && py > b.top - 60 && py < b.bottom + 60)) return false;
+          if (g.width > 0 && px < g.right + 50 && py > g.top - 50 && py < g.bottom + 50) return false;
+          return true;
+        };
+        const prefs = [[0.18, 0.8], [0.18, 0.2], [0.82, 0.82], [0.82, 0.18], [0.5, 0.92], [0.5, 0.08]];
+        for (const [u, v] of prefs) if (clear(W * u, H * v)) return { x: W * u, y: H * v };
+        for (let k = 0; k < 80; k++) {
+          const px = R + 20 + Math.random() * (W - 2 * R - 40), py = R + 20 + Math.random() * (H - 2 * R - 40);
+          if (clear(px, py)) return { x: px, y: py };
+        }
+        return { x: W * 0.18, y: H * 0.9 };
+      }
+
       function boom(px, py) {
         const layer = document.createElement('div');
         layer.className = 'explosion';
@@ -1090,7 +1111,7 @@
           return;
         }
         setTimeout(() => { // dinghy back at the start
-          x = innerWidth * 0.18; y = innerHeight * 0.8; vx = 0; vy = 0;
+          ({ x, y } = safeSpawn()); vx = 0; vy = 0;
           el.style.visibility = '';
           crashed = false;
         }, 1500);
@@ -1108,10 +1129,10 @@
         crashed = false;
         el.style.visibility = '';
         crashTargets.forEach((t) => { t.style.opacity = ''; t.style.pointerEvents = ''; t.style.filter = ''; t.style.animation = ''; });
-        x = innerWidth * 0.18; y = innerHeight * 0.8;
+        ({ x, y } = safeSpawn());
         document.querySelectorAll('.explosion').forEach((n) => n.remove());
       });
-      let x = innerWidth * 0.18, y = innerHeight * 0.8;
+      let { x, y } = safeSpawn(); // launch somewhere clear of the yacht
       let vx = 0, vy = 0;
       let scored = false;
       const keys = {};
@@ -1195,7 +1216,7 @@
             vx = 0; vy = 0;
             setTimeout(() => {
               window.location.href = 'mailto:shikharsehgal@uchicago.edu';
-              x = innerWidth * 0.18; y = innerHeight * 0.8; // reset for another round
+              ({ x, y } = safeSpawn()); vx = 0; vy = 0; // reset for another round
               goal.classList.remove('scored');
               scored = false;
             }, 800);
