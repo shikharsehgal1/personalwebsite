@@ -971,6 +971,8 @@
       const R = 14;
       const crashTargets = [...document.querySelectorAll('.buoy')]; // only the little link boats — the yacht is harmless
       let crashed = false;
+      let rolledThisVisit = false;
+      let lastInput = -1e9; // when the player last steered (keys or a tap)
 
       // the dock's wooden arms and back are solid: the only way in is the
       // open front (right-hand) side of the slip. Called every sub-step, and
@@ -1078,11 +1080,12 @@
           target.style.animation = 'none'; // stop the underglow so the scorch shows
           target.style.filter = 'brightness(.55) sepia(.6) drop-shadow(0 8px 14px rgba(4,7,18,.5))';
         }
-        // rickroll only on a visitor's first crash; after that you just respawn
-        let seen = false;
-        try { seen = localStorage.getItem('rickrolled') === '1'; } catch (e) {}
+        // rickroll on the first crash of each visit; after that you just respawn
+        let seen = rolledThisVisit;
+        try { seen = seen || sessionStorage.getItem('rickrolled-visit') === '1'; } catch (e) {}
         if (!seen) {
-          try { localStorage.setItem('rickrolled', '1'); } catch (e) {}
+          rolledThisVisit = true;
+          try { sessionStorage.setItem('rickrolled-visit', '1'); } catch (e) {}
           setTimeout(() => { window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; }, 1100);
           return;
         }
@@ -1116,6 +1119,7 @@
 
       addEventListener('keydown', (e) => {
         keys[e.key.toLowerCase()] = true;
+        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(e.key.toLowerCase())) lastInput = performance.now();
         if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(e.key.toLowerCase())) {
           e.preventDefault();
         }
@@ -1124,6 +1128,7 @@
 
       // touch: a tap shoves the ball toward that spot (hard enough to reach a wall)
       nudgeBall = (tx, ty) => {
+        lastInput = performance.now();
         const dx = tx - x, dy = ty - y;
         const d = Math.hypot(dx, dy) || 1;
         const push = 380 + Math.min(d, 600) * 0.9;
@@ -1209,7 +1214,8 @@
             const cy = Math.max(b.top + iy, Math.min(y, b.bottom - iy));
             const d = Math.hypot(x - cx, y - cy);
             if (d >= R * 0.85) continue;
-            if (sp > 45) { crash(target, cx, cy); break; }
+            const steering = held('arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's') || now - lastInput < 1500;
+            if (sp > 45 || (steering && sp > 12)) { crash(target, cx, cy); break; }
             // a gentle bump: just push off
             const nx = (x - cx) / (d || 1), ny = (y - cy) / (d || 1);
             x += nx * (R * 0.85 - d); y += ny * (R * 0.85 - d);
