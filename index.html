@@ -43,6 +43,8 @@
       will-change: transform;
     }
     #ball svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    #ball .eyes { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+    @keyframes blink { 0%, 94%, 100% { transform: scaleX(1); } 96% { transform: scaleX(0.12); } }
 
     .page {
       position: relative;
@@ -528,6 +530,16 @@
       <path d="M22 20 Q15 11.5 6.5 12.5 Z" fill="#f3ecdd" stroke="#d9ccb0" stroke-width="0.8" stroke-linejoin="round"/>
       <line x1="22" y1="20" x2="7" y2="13" stroke="#2c3448" stroke-width="1.2" stroke-linecap="round"/>
       <circle cx="22" cy="20" r="1.8" fill="#9aa3ad"/>
+      <!-- a little face on the foredeck: eyes follow the cursor -->
+      <g class="face">
+        <g class="eyes">
+          <circle cx="26.2" cy="17.5" r="2.15" fill="#ffffff" stroke="#1d2a4a" stroke-width="0.45"/>
+          <circle cx="26.2" cy="22.5" r="2.15" fill="#ffffff" stroke="#1d2a4a" stroke-width="0.45"/>
+          <circle class="pupil" cx="26.2" cy="17.5" r="1.05" fill="#141a2e"/>
+          <circle class="pupil" cx="26.2" cy="22.5" r="1.05" fill="#141a2e"/>
+        </g>
+        <path d="M30.2 18.3 Q32.1 20 30.2 21.7" fill="none" stroke="#1d2a4a" stroke-width="0.55" stroke-linecap="round"/>
+      </g>
       <polygon points="22,20 27,18.6 22,17.6" fill="#c9584a"/>
       <!-- nav lights: red port, green starboard, white stern -->
       <circle cx="31" cy="15.6" r="2.6" fill="#ff3b3b" opacity=".35"/><circle cx="31" cy="15.6" r="1.1" fill="#ff4a4a"/>
@@ -1160,6 +1172,11 @@
       let lastWake = 0;
       let lastWallHit = 0;
       let heading = 0;
+      const pupils = [...el.querySelectorAll('.pupil')];
+      let lookAt = null;
+      addEventListener('pointermove', (e) => { lookAt = { x: e.clientX, y: e.clientY }; });
+      addEventListener('pointerdown', (e) => { lookAt = { x: e.clientX, y: e.clientY }; });
+      document.addEventListener('pointerleave', () => { lookAt = null; });
       let last = performance.now();
       function step(now) {
         const dt = Math.min((now - last) / 1000, 0.05);
@@ -1259,6 +1276,13 @@
           heading += d * Math.min(1, dt * 8);
         }
         el.style.transform = `translate(${x - 27}px, ${y - 27}px) rotate(${heading}rad) scale(${depthAt(y)})`;
+
+        // eyes look at the cursor (in the dinghy's own turned frame)
+        const look = lookAt || { x: x + Math.cos(heading) * 100, y: y + Math.sin(heading) * 100 };
+        const la = Math.atan2(look.y - y, look.x - x) - heading;
+        const reach = Math.min(1, Math.hypot(look.x - x, look.y - y) / 40) * 0.95;
+        const ex = (Math.cos(la) * reach).toFixed(2), ey = (Math.sin(la) * reach).toFixed(2);
+        for (const pu of pupils) pu.setAttribute('transform', `translate(${ex} ${ey})`);
         requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
