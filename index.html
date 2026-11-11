@@ -423,6 +423,26 @@
 
     #music-btn:hover { background: rgba(255, 255, 255, 0.28); }
 
+    #music-player { /* YouTube mini-player, shown while the song plays */
+      position: fixed;
+      top: 72px;
+      right: 20px;
+      z-index: 3;
+      width: 200px;
+      height: 200px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 14px 40px rgba(4, 7, 18, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: #000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+    }
+    #music-player.open { opacity: 1; visibility: visible; transform: none; transition: opacity 0.25s ease, transform 0.25s ease; }
+    #music-player iframe { display: block; width: 200px; height: 200px; border: 0; }
+
     #hint {
       position: fixed;
       left: 20px;
@@ -467,6 +487,7 @@
       .buoy::after { display: none; }
 
       #music-btn { top: 12px; right: 12px; padding: 7px 14px; font-size: 0.85rem; }
+      #music-player { top: auto; bottom: 16px; right: 12px; }
       #hint, #goal { display: none; }
     }
 
@@ -516,6 +537,7 @@
   <div id="goal"><span class="piling p1"></span><span class="piling p2"></span><span class="cleat"></span><div class="goal-label">dock here to email me</div></div>
 
   <button id="music-btn" aria-pressed="false">&#9834; play music</button>
+  <div id="music-player" aria-label="Music player"><div id="music-frame"></div></div>
   <div id="hint">arrow keys / WASD sail the little boat &mdash; dock it to email me &mdash; click &amp; drag to stir the lake</div>
 
   <div class="page">
@@ -942,6 +964,39 @@
         }
       }
 
+      // the yacht is solid too: the dinghy bounces off it (moving with it)
+      const yCard = document.querySelector('.card'), yHull = document.querySelector('.hull');
+      let yPrev = null, yvx = 0, yvy = 0, lastYachtThud = 0;
+      function yachtBox(dt) {
+        const c = yCard.getBoundingClientRect(), h = yHull.getBoundingClientRect();
+        const box = { l: Math.min(c.left, h.left), r: Math.max(c.right, h.right), t: c.top, b: h.bottom - h.height * 0.25 };
+        const cx = (box.l + box.r) / 2, cy = (box.t + box.b) / 2;
+        if (yPrev && dt > 0) { yvx = (cx - yPrev.x) / dt; yvy = (cy - yPrev.y) / dt; }
+        yPrev = { x: cx, y: cy };
+        return box;
+      }
+      function collideYacht(bx, px, py) {
+        const { l, t, r, b } = bx;
+        const cx = Math.max(l, Math.min(x, r)), cy = Math.max(t, Math.min(y, b));
+        let nx = x - cx, ny = y - cy, d = Math.hypot(nx, ny);
+        if (d >= R) return;
+        if (d < 0.01) { // centre got inside: leave by the side we came from
+          if (px < l) { nx = -1; ny = 0; x = l - R; }
+          else if (px > r) { nx = 1; ny = 0; x = r + R; }
+          else if (py < t) { nx = 0; ny = -1; y = t - R; }
+          else { nx = 0; ny = 1; y = b + R; }
+        } else {
+          nx /= d; ny /= d;
+          x += nx * (R - d); y += ny * (R - d);
+        }
+        const rvn = (vx - yvx) * nx + (vy - yvy) * ny;
+        if (rvn < 0) {
+          vx -= 1.75 * rvn * nx; vy -= 1.75 * rvn * ny; // bouncy rebound
+          const n = performance.now();
+          if (-rvn > 40 && n - lastYachtThud > 250) { lastYachtThud = n; addRipple(x, y, Math.min(0.35, -rvn / 900)); }
+        }
+      }
+
       function boom(px, py) {
         const layer = document.createElement('div');
         layer.className = 'explosion';
@@ -1074,12 +1129,14 @@
 
         // integrate in small sub-steps so a fast dinghy can't skip through planks
         const dock = goal.getBoundingClientRect();
+        const ybox = yachtBox(dt);
         const n = Math.max(1, Math.ceil(Math.hypot(vx, vy) * dt / 4));
         for (let k = 0; k < n; k++) {
           const px = x, py = y;
           x += vx * dt / n;
           y += vy * dt / n;
           collideDock(dock, px, py);
+          if (!crashed) collideYacht(ybox, px, py);
         }
 
         // bounce off the viewport walls
@@ -1420,107 +1477,55 @@
     })();
 
     // ====================================================================
-    // Music: a small generative ambient piece via Web Audio — slow pads
-    // cycling through a dreamy progression, with pentatonic plucks
-    // echoing over the top. No audio files, nothing to license.
+    // Music: "Water of Love" by Dire Straits, through YouTube's official
+    // embedded player (the licensed way to play it). The player only loads
+    // when someone asks for music, and it stays visible while it plays, as
+    // YouTube requires. Clicking again pauses and tucks it away.
     // ====================================================================
     (function () {
+      const VIDEO = 'rQF4kK63UKs'; // Dire Straits - Topic (provided by Universal Music)
       const btn = document.getElementById('music-btn');
-      let ctx = null;
-      let master, delay;
-      let timers = [];
-      let on = false;
+      const box = document.getElementById('music-player');
+      let player = null, ready = false, on = false, apiLoading = false;
 
-      const CHORDS = [
-        [220.0, 261.63, 329.63, 493.88],  // Am9
-        [174.61, 220.0, 261.63, 329.63],  // Fmaj7
-        [130.81, 196.0, 246.94, 329.63],  // Cmaj7
-        [196.0, 246.94, 293.66, 440.0],   // G add9
-      ];
-      const PLUCKS = [440.0, 523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+      function label() {
+        btn.setAttribute('aria-pressed', String(on));
+        btn.innerHTML = on ? '&#9835; water of love &mdash; pause' : '&#9834; play music';
+        box.classList.toggle('open', on);
+      }
 
-      function playPad(freqs) {
-        const t0 = ctx.currentTime;
-        const pad = ctx.createGain();
-        pad.gain.setValueAtTime(0, t0);
-        pad.gain.linearRampToValueAtTime(0.05, t0 + 3.5);
-        pad.gain.setValueAtTime(0.05, t0 + 6.5);
-        pad.gain.linearRampToValueAtTime(0, t0 + 10);
-        pad.connect(master);
-        freqs.forEach((f) => {
-          [0, 4].forEach((cents) => { // two detuned voices per note
-            const o = ctx.createOscillator();
-            o.type = 'sine';
-            o.frequency.value = f;
-            o.detune.value = cents;
-            o.connect(pad);
-            o.start(t0);
-            o.stop(t0 + 10.5);
-          });
+      function create() {
+        player = new YT.Player('music-frame', {
+          host: 'https://www.youtube-nocookie.com',
+          videoId: VIDEO,
+          width: 200,
+          height: 200,
+          playerVars: { autoplay: 1, loop: 1, playlist: VIDEO, controls: 1, modestbranding: 1, rel: 0, playsinline: 1 },
+          events: {
+            onReady: (e) => { ready = true; e.target.setVolume(70); if (on) e.target.playVideo(); },
+            onError: () => { on = false; label(); btn.innerHTML = '&#9834; music unavailable'; },
+          },
         });
       }
 
-      function playPluck() {
-        const t0 = ctx.currentTime;
-        const f = PLUCKS[Math.floor(Math.random() * PLUCKS.length)];
-        const g = ctx.createGain();
-        g.gain.setValueAtTime(0.09, t0);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.8);
-        const o = ctx.createOscillator();
-        o.type = 'triangle';
-        o.frequency.value = f;
-        o.connect(g);
-        g.connect(master);
-        g.connect(delay);
-        o.start(t0);
-        o.stop(t0 + 2);
-      }
-
-      function start() {
-        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume();
-
-        master = ctx.createGain();
-        master.gain.value = 0.9;
-        master.connect(ctx.destination);
-
-        delay = ctx.createDelay(1.5);
-        delay.delayTime.value = 0.55;
-        const fb = ctx.createGain();
-        fb.gain.value = 0.42;
-        delay.connect(fb);
-        fb.connect(delay);
-        delay.connect(master);
-
-        let chord = 0;
-        playPad(CHORDS[chord]);
-        timers.push(setInterval(() => {
-          chord = (chord + 1) % CHORDS.length;
-          playPad(CHORDS[chord]);
-        }, 9000));
-
-        function schedulePluck() {
-          playPluck();
-          timers.push(setTimeout(schedulePluck, 1800 + Math.random() * 2600));
-        }
-        timers.push(setTimeout(schedulePluck, 1500));
-      }
-
-      function stop() {
-        timers.forEach((t) => { clearInterval(t); clearTimeout(t); });
-        timers = [];
-        if (master) {
-          const t0 = ctx.currentTime;
-          master.gain.linearRampToValueAtTime(0, t0 + 0.8);
-          setTimeout(() => ctx.suspend(), 900);
-        }
+      function loadApi() {
+        if (apiLoading) return;
+        apiLoading = true;
+        window.onYouTubeIframeAPIReady = create;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
       }
 
       btn.addEventListener('click', () => {
         on = !on;
-        btn.setAttribute('aria-pressed', String(on));
-        btn.innerHTML = on ? '&#9835; sound on' : '&#9834; play music';
-        if (on) start(); else stop();
+        label();
+        if (on) {
+          if (!player) loadApi();
+          else if (ready) player.playVideo();
+        } else if (ready) {
+          player.pauseVideo();
+        }
       });
     })();
   </script>
