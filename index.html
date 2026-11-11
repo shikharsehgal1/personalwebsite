@@ -652,6 +652,42 @@
       return Math.max(0.6, Math.min(1.3, (PROJ.SINP - dy * PROJ.COSP) / PROJ.SINP));
     };
 
+    // The yacht's real outline (sail, jib and tapered hull) as polygons in
+    // screen space, so things bounce off what you can actually see.
+    const yachtParts = { card: document.querySelector('.card'), hull: document.querySelector('.hull'), jib: document.querySelector('.jib') };
+    function yachtShape() {
+      const c = yachtParts.card.getBoundingClientRect();
+      const h = yachtParts.hull.getBoundingClientRect();
+      const j = yachtParts.jib ? yachtParts.jib.getBoundingClientRect() : null;
+      const at = (r, pts) => pts.map(([u, v]) => [r.left + u * r.width, r.top + v * r.height]);
+      const polys = [
+        at(c, [[0.0, 0.09], [0.99, 0.005], [1.015, 0.5], [0.97, 0.995], [0.0, 0.995]]),            // mainsail (the text)
+        at(h, [[0.008, 0.04], [0.3, 0.12], [0.6, 0.15], [0.978, 0.14], [0.954, 0.68], [0.84, 0.89], [0.36, 0.93], [0.19, 0.89], [0.07, 0.57]]), // hull
+      ];
+      if (j && j.width > 2) polys.push(at(j, [[0.96, 0.07], [0.1, 0.97], [0.94, 0.93]]));   // jib
+      let l = 1e9, t = 1e9, r = -1e9, b = -1e9;
+      for (const p of polys) for (const [x, y] of p) { l = Math.min(l, x); r = Math.max(r, x); t = Math.min(t, y); b = Math.max(b, y); }
+      return { polys, box: { l, t, r, b, cx: (l + r) / 2, cy: (t + b) / 2 } };
+    }
+    // circle vs polygon: null if apart, else the push-out normal and depth
+    function circlePoly(cx, cy, rad, pts) {
+      let inside = false, best = 1e9, bx = 0, by = 0;
+      for (let a = 0, z = pts.length - 1; a < pts.length; z = a++) {
+        const [x1, y1] = pts[z], [x2, y2] = pts[a];
+        if ((y2 > cy) !== (y1 > cy) && cx < (x1 - x2) * (cy - y2) / (y1 - y2) + x2) inside = !inside;
+        const ex = x2 - x1, ey = y2 - y1, L = ex * ex + ey * ey || 1;
+        const u = Math.max(0, Math.min(1, ((cx - x1) * ex + (cy - y1) * ey) / L));
+        const px = x1 + u * ex, py = y1 + u * ey, d = Math.hypot(cx - px, cy - py);
+        if (d < best) { best = d; bx = px; by = py; }
+      }
+      if (!inside && best >= rad) return null;
+      let nx = cx - bx, ny = cy - by;
+      const n = Math.hypot(nx, ny) || 1;
+      nx /= n; ny /= n;
+      if (inside) { nx = -nx; ny = -ny; return { nx, ny, depth: rad + best }; }
+      return { nx, ny, depth: rad - best };
+    }
+
     (function () {
       const canvas = document.getElementById('fluid');
       const gl = canvas.getContext('webgl', { antialias: false, depth: false, stencil: false });
@@ -965,36 +1001,26 @@
         }
       }
 
-      // the yacht is solid too: the dinghy bounces off it (moving with it)
-      const yCard = document.querySelector('.card'), yHull = document.querySelector('.hull');
+      // the yacht is solid too: the dinghy bounces off its real outline
       let yPrev = null, yvx = 0, yvy = 0, lastYachtThud = 0;
-      function yachtBox(dt) {
-        const c = yCard.getBoundingClientRect(), h = yHull.getBoundingClientRect();
-        const box = { l: Math.min(c.left, h.left), r: Math.max(c.right, h.right), t: c.top, b: h.bottom - h.height * 0.25 };
-        const cx = (box.l + box.r) / 2, cy = (box.t + box.b) / 2;
-        if (yPrev && dt > 0) { yvx = (cx - yPrev.x) / dt; yvy = (cy - yPrev.y) / dt; }
-        yPrev = { x: cx, y: cy };
-        return box;
+      function yachtNow(dt) {
+        const sh = yachtShape();
+        if (yPrev && dt > 0) { yvx = (sh.box.cx - yPrev.x) / dt; yvy = (sh.box.cy - yPrev.y) / dt; }
+        yPrev = { x: sh.box.cx, y: sh.box.cy };
+        return sh;
       }
-      function collideYacht(bx, px, py) {
-        const { l, t, r, b } = bx;
-        const cx = Math.max(l, Math.min(x, r)), cy = Math.max(t, Math.min(y, b));
-        let nx = x - cx, ny = y - cy, d = Math.hypot(nx, ny);
-        if (d >= R) return;
-        if (d < 0.01) { // centre got inside: leave by the side we came from
-          if (px < l) { nx = -1; ny = 0; x = l - R; }
-          else if (px > r) { nx = 1; ny = 0; x = r + R; }
-          else if (py < t) { nx = 0; ny = -1; y = t - R; }
-          else { nx = 0; ny = 1; y = b + R; }
-        } else {
-          nx /= d; ny /= d;
-          x += nx * (R - d); y += ny * (R - d);
-        }
-        const rvn = (vx - yvx) * nx + (vy - yvy) * ny;
-        if (rvn < 0) {
-          vx -= 1.75 * rvn * nx; vy -= 1.75 * rvn * ny; // bouncy rebound
-          const n = performance.now();
-          if (-rvn > 40 && n - lastYachtThud > 250) { lastYachtThud = n; addRipple(x, y, Math.min(0.35, -rvn / 900)); }
+      function collideYacht(sh) {
+        const rad = R * 0.75; // the hull of the dinghy, not its glow
+        for (const poly of sh.polys) {
+          const hit = circlePoly(x, y, rad, poly);
+          if (!hit) continue;
+          x += hit.nx * hit.depth; y += hit.ny * hit.depth;
+          const rvn = (vx - yvx) * hit.nx + (vy - yvy) * hit.ny;
+          if (rvn < 0) {
+            vx -= 1.75 * rvn * hit.nx; vy -= 1.75 * rvn * hit.ny;
+            const n = performance.now();
+            if (-rvn > 40 && n - lastYachtThud > 250) { lastYachtThud = n; addRipple(x, y, Math.min(0.35, -rvn / 900)); }
+          }
         }
       }
 
@@ -1130,14 +1156,14 @@
 
         // integrate in small sub-steps so a fast dinghy can't skip through planks
         const dock = goal.getBoundingClientRect();
-        const ybox = yachtBox(dt);
+        const ysh = yachtNow(dt);
         const n = Math.max(1, Math.ceil(Math.hypot(vx, vy) * dt / 4));
         for (let k = 0; k < n; k++) {
           const px = x, py = y;
           x += vx * dt / n;
           y += vy * dt / n;
           collideDock(dock, px, py);
-          if (!crashed) collideYacht(ybox, px, py);
+          if (!crashed) collideYacht(ysh);
         }
 
         // bounce off the viewport walls
@@ -1175,17 +1201,20 @@
         // and both go up in flames... then you get rickrolled.
         if (!crashed && !scored) {
           const sp = Math.hypot(vx, vy);
-          if (sp > 70) {
-            for (const target of crashTargets) {
-              const b = target.getBoundingClientRect();
-              const ix = b.width * 0.14, iy = b.height * 0.14; // forgive near-misses
-              const cx = Math.max(b.left + ix, Math.min(x, b.right - ix));
-              const cy = Math.max(b.top + iy, Math.min(y, b.bottom - iy));
-              if (b.width > 0 && Math.hypot(x - cx, y - cy) < R) {
-                crash(target, cx, cy);
-                break;
-              }
-            }
+          for (const target of crashTargets) {
+            const b = target.getBoundingClientRect();
+            if (!(b.width > 0) || target.style.opacity === '0') continue;
+            const ix = b.width * 0.16, iy = b.height * 0.14; // forgive near-misses
+            const cx = Math.max(b.left + ix, Math.min(x, b.right - ix));
+            const cy = Math.max(b.top + iy, Math.min(y, b.bottom - iy));
+            const d = Math.hypot(x - cx, y - cy);
+            if (d >= R * 0.85) continue;
+            if (sp > 45) { crash(target, cx, cy); break; }
+            // a gentle bump: just push off
+            const nx = (x - cx) / (d || 1), ny = (y - cy) / (d || 1);
+            x += nx * (R * 0.85 - d); y += ny * (R * 0.85 - d);
+            const vn = vx * nx + vy * ny;
+            if (vn < 0) { vx -= 1.6 * vn * nx; vy -= 1.6 * vn * ny; }
           }
         }
 
@@ -1274,14 +1303,17 @@
         wrap.style.translate = `${ax * Math.sin(t * 2 * Math.PI / 90)}px ${wy}px`;
         wrap.style.scale = (0.25 + 0.75 * depthAt(H / 2 + wy)).toFixed(3); // farther = smaller (damped so text stays readable)
 
-        // yacht velocity (it's kinematic: infinitely heavy, it just shoves)
-        const card = cardEl.getBoundingClientRect(), hull = hullEl.getBoundingClientRect();
-        const ycx = (card.left + card.right) / 2, ycy = (card.top + hull.bottom) / 2;
-        const yvx = dt > 0 && prevY ? (ycx - prevY.x) / dt : 0;
-        const yvy = dt > 0 && prevY ? (ycy - prevY.y) / dt : 0;
-        prevY = { x: ycx, y: ycy };
-        const yl = Math.min(card.left, hull.left), yr = Math.max(card.right, hull.right);
-        const yt = card.top - 80, yb = hull.bottom;
+        // the yacht is kinematic (infinitely heavy): boats bounce off its outline
+        const ysh = yachtShape(), YB = ysh.box;
+        const yvx = dt > 0 && prevY ? (YB.cx - prevY.x) / dt : 0;
+        const yvy = dt > 0 && prevY ? (YB.cy - prevY.y) / dt : 0;
+        prevY = { x: YB.cx, y: YB.cy };
+        const pad = 30;
+        const inYacht = (x, y) => x > YB.l - pad && x < YB.r + pad && y > YB.t - pad && y < YB.b + pad;
+        const crossesYacht = (ax, ay, bx2, by2) => {
+          for (let k = 1; k < 24; k++) { const u = k / 24; if (inYacht(ax + (bx2 - ax) * u, ay + (by2 - ay) * u)) return true; }
+          return false;
+        };
 
         const E = 0.85; // restitution: bouncy but loses a little energy
         for (const b of boats) {
@@ -1290,11 +1322,35 @@
           // each boat sails toward a destination anywhere on the lake, then picks
           // another; a little weave keeps the course from looking robotic
           const w0 = b.el.offsetWidth, h0 = b.el.offsetHeight;
-          if (!b.goal || Math.hypot(b.goal.x - b.x, b.goal.y - b.y) < 60 || t > b.goalBy) {
-            b.goal = { x: Math.random() * (W - w0), y: 40 + Math.random() * (H - h0 - 60) };
-            b.goalBy = t + 25;
+          const bcx = b.x + w0 / 2, bcy = b.y + h0 / 2;
+          if (!b.route || !b.route.length || t > b.goalBy) {
+            // pick a destination anywhere on open water (never on the yacht)
+            let gx, gy, tries = 0;
+            do { gx = w0 / 2 + Math.random() * (W - w0); gy = h0 / 2 + Math.random() * (H - h0); } while (inYacht(gx, gy) && ++tries < 40);
+            b.route = [{ x: gx, y: gy }];
+            // if the yacht is in the way, go round it: over the masthead or under the hull
+            if (crossesYacht(bcx, bcy, gx, gy)) {
+              // plan with the boat's real hit size (its hull), not the whole sprite
+              const rb0 = w0 * 0.32, top = h0 * 0.5 + 4, bot = H - h0 * 0.5 - 4;
+              const above = YB.t - rb0 - 14, below = YB.b + rb0 + 14;
+              const okA = above >= top, okB = below <= bot;
+              const wy = okA && (!okB || bcy < YB.cy) ? above : below;
+              if (okA || okB) {
+                const near = bcx < YB.cx ? YB.l - pad - w0 / 2 : YB.r + pad + w0 / 2;
+                const far = gx < YB.cx ? YB.l - pad - w0 / 2 : YB.r + pad + w0 / 2;
+                b.route = [{ x: near, y: wy }, { x: far, y: wy }, { x: gx, y: gy }];
+              } else { // no room round it: pick somewhere on this side instead
+                b.route = [{ x: bcx < YB.cx ? Math.random() * Math.max(10, YB.l - pad - w0) + w0 / 2 : YB.r + pad + w0 / 2 + Math.random() * Math.max(10, W - YB.r - pad - w0), y: gy }];
+              }
+            }
+            // allow enough time to actually sail the whole route
+            let len = 0, px = bcx, py = bcy;
+            for (const q of b.route) { len += Math.hypot(q.x - px, q.y - py); px = q.x; py = q.y; }
+            b.goalBy = t + 8 + 2.2 * len / b.sp;
           }
-          let want = Math.atan2((b.goal.y - b.y) / 0.55, b.goal.x - b.x);
+          if (Math.hypot(b.route[0].x - bcx, b.route[0].y - bcy) < 50) b.route.shift();
+          const tgt = b.route[0] || { x: bcx, y: bcy };
+          let want = Math.atan2((tgt.y - bcy) / 0.55, tgt.x - bcx);
           want += Math.sin(t * 0.6 + b.i * 2) * 0.35;
           let da = want - b.a;
           da = Math.atan2(Math.sin(da), Math.cos(da));
@@ -1313,7 +1369,19 @@
           if (b.y < 4) { b.y = 4; b.vy = Math.abs(b.vy) * E; }
           if (b.y > H - h - 4) { b.y = H - h - 4; b.vy = -Math.abs(b.vy) * E; }
 
-          // (they pass behind the yacht — it's nearer the camera — rather than bouncing off)
+          // bounce off the yacht where they actually touch it
+          const rb = w * 0.32;
+          for (const poly of ysh.polys) {
+            const hit = circlePoly(b.x + w / 2, b.y + h * 0.55, rb, poly);
+            if (!hit) continue;
+            b.x += hit.nx * hit.depth; b.y += hit.ny * hit.depth;
+            const rvn = (b.vx - yvx) * hit.nx + (b.vy - yvy) * hit.ny;
+            if (rvn < 0) {
+              b.vx -= (1 + E) * rvn * hit.nx; b.vy -= (1 + E) * rvn * hit.ny;
+              bump(b.x + w / 2 - hit.nx * rb, b.y + h * 0.55 - hit.ny * rb, rvn);
+            }
+            b.a = Math.atan2(b.vy, b.vx);
+          }
         }
 
         // boat-on-boat: equal-mass elastic-ish collisions along the line of centres
