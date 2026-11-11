@@ -7,7 +7,7 @@
   <meta name="description" content="Shikhar Sehgal — Stats and CS at the University of Chicago." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;1,400;1,500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;1,400;1,500&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -514,6 +514,99 @@
       .card { padding: 42px 16px 22px 26px; }
       .card p { font-size: 1rem; }
     }
+
+    /* =================== cyberpunk theme =================== */
+    body { background: #05030c; }
+    body::after { /* CRT scanlines + vignette over everything */
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 6;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px),
+        radial-gradient(ellipse at center, transparent 55%, rgba(5, 0, 15, 0.55) 100%);
+    }
+
+    .card { color: #e8ecff; }
+    .card p { color: rgba(226, 232, 255, 0.86); }
+    .card a {
+      color: #ff4fd8;
+      text-decoration-color: rgba(255, 79, 216, 0.5);
+      text-shadow: 0 0 10px rgba(255, 79, 216, 0.55);
+      transition: color 0.15s ease, text-shadow 0.15s ease;
+    }
+    .card a:hover { opacity: 1; color: #00e5ff; text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); }
+    .sailcloth { filter: drop-shadow(0 0 14px rgba(0, 229, 255, 0.35)) drop-shadow(0 0 30px rgba(255, 43, 214, 0.18)) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.5)); }
+
+    .contact-btn {
+      background: transparent;
+      border: 1px solid #ff2bd6;
+      color: #ff9bea !important;
+      font-family: 'JetBrains Mono', monospace;
+      font-style: normal;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      border-radius: 4px;
+      padding: 12px 24px;
+      box-shadow: 0 0 12px rgba(255, 43, 214, 0.45), inset 0 0 12px rgba(255, 43, 214, 0.2);
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+    .contact-btn:hover {
+      transform: none;
+      color: #05030c !important;
+      background: #00e5ff;
+      border-color: #00e5ff;
+      box-shadow: 0 0 22px rgba(0, 229, 255, 0.8);
+      animation: glitch 0.3s steps(2) 1;
+    }
+    @keyframes glitch {
+      0%   { text-shadow: -2px 0 #ff2bd6, 2px 0 #00e5ff; transform: translate(1px, 0); }
+      50%  { text-shadow: 2px 0 #ff2bd6, -2px 0 #00e5ff; transform: translate(-1px, 1px); }
+      100% { text-shadow: none; transform: none; }
+    }
+
+    .rule { border-top: 1px solid rgba(0, 229, 255, 0.25); }
+    .made-in, .goal-label, #hint, #music-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-style: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+    .made-in { font-size: 0.7rem; color: rgba(0, 229, 255, 0.7); }
+
+    .mast { background: linear-gradient(90deg, #1b1f33, #00e5ff 50%, #1b1f33); box-shadow: 0 0 8px rgba(0, 229, 255, 0.6); }
+    .burgee { border-left-color: #ff2bd6; filter: drop-shadow(0 0 6px rgba(255, 43, 214, 0.8)); }
+    .hull { filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.35)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.6)); }
+
+    #music-btn {
+      font-size: 0.72rem;
+      color: #00e5ff;
+      border: 1px solid rgba(0, 229, 255, 0.6);
+      border-radius: 4px;
+      background: rgba(5, 3, 12, 0.55);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+    }
+    #music-btn:hover { background: rgba(0, 229, 255, 0.15); }
+    #music-player { border-color: rgba(0, 229, 255, 0.6); border-radius: 6px; box-shadow: 0 0 20px rgba(0, 229, 255, 0.35); }
+
+    #hint { font-size: 0.66rem; color: rgba(0, 229, 255, 0.6); text-shadow: 0 0 8px rgba(0, 229, 255, 0.4); }
+
+    #goal {
+      border-image: none;
+      border-color: #10142a;
+      background: rgba(0, 229, 255, 0.04);
+      box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.7), 0 0 18px rgba(0, 229, 255, 0.45), inset 0 0 18px rgba(0, 229, 255, 0.15);
+    }
+    .piling { background: radial-gradient(circle at 40% 35%, #3a2a55, #10091d 70%); box-shadow: 0 0 0 2px #ff2bd6, 0 0 12px rgba(255, 43, 214, 0.7); }
+    .cleat { background: #00e5ff; box-shadow: 0 0 6px #00e5ff; }
+    .goal-label { font-size: 0.64rem; color: #ff9bea; text-shadow: 0 0 8px rgba(255, 43, 214, 0.6); }
+
+    .buoy { filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.5)) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5)); }
+    #ball { filter: drop-shadow(0 0 8px rgba(255, 43, 214, 0.75)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); }
+    .critter { filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.55)); }
+    .drop { background: rgba(160, 250, 255, 0.95); box-shadow: 0 0 4px #00e5ff; }
   </style>
 </head>
 <body>
@@ -547,20 +640,22 @@
           <svg class="sailcloth" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="canvasg" x1="0" y1="0" x2="1" y2="0.3">
-                <stop offset="0" stop-color="#fbf7ee"/><stop offset=".55" stop-color="#f1e9d7"/><stop offset="1" stop-color="#e2d4b5"/>
+                <stop offset="0" stop-color="#140f2e" stop-opacity=".92"/><stop offset=".55" stop-color="#0b0c1f" stop-opacity=".9"/><stop offset="1" stop-color="#1a0b2c" stop-opacity=".92"/>
               </linearGradient>
             </defs>
             <path d="M1 9 L99 0.5 Q102.5 52 97 99.5 L1 99.5 Z" fill="url(#canvasg)"/>
-            <path d="M99 0.5 Q102.5 52 97 99.5" fill="none" stroke="#d8c8a6" stroke-width="2" vector-effect="non-scaling-stroke"/>
+            <path d="M1 9 L99 0.5 Q102.5 52 97 99.5" fill="none" stroke="#00e5ff" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+            <line x1="1" y1="9" x2="1" y2="99.5" stroke="#ff2bd6" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
             <!-- gaff (top spar) and boom -->
-            <line x1="0" y1="9.3" x2="100" y2="0.3" stroke="#2c3448" stroke-width="5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-            <line x1="0" y1="100" x2="103" y2="100" stroke="#2c3448" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <line x1="0" y1="9.3" x2="100" y2="0.3" stroke="#1b1f33" stroke-width="5" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <line x1="0" y1="100" x2="103" y2="100" stroke="#1b1f33" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <line x1="0" y1="100" x2="103" y2="100" stroke="#00e5ff" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
           </svg>
           <div class="mast"></div>
           <div class="burgee"></div>
           <svg class="jib" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <line x1="100" y1="0" x2="6" y2="100" stroke="#c9ced6" stroke-width="1.2" vector-effect="non-scaling-stroke" opacity=".85"/>
-            <path class="cloth" d="M96 7 L10 97 Q55 96 94 93 Q88 50 96 7 Z" fill="#f6f0e2"/>
+            <path class="cloth" d="M96 7 L10 97 Q55 96 94 93 Q88 50 96 7 Z" fill="#120c26" fill-opacity=".9" stroke="#ff2bd6" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
           </svg>
       <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
       <p>Right now I'm working on <a href="https://tassai.xyz/" target="_blank" rel="noopener">TASS</a> and <a href="https://parabolamarkets.xyz/" target="_blank" rel="noopener">Parabola Markets</a>, and I DJ at <a href="https://whpk.org/" target="_blank" rel="noopener">WHPK</a>.</p>
@@ -575,14 +670,14 @@
         <svg class="hull" viewBox="0 0 1000 112" aria-hidden="true">
           <defs>
             <linearGradient id="hullg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#ffffff"/><stop offset=".75" stop-color="#e6eaf0"/><stop offset="1" stop-color="#c7ceda"/>
+              <stop offset="0" stop-color="#2a2f45"/><stop offset=".7" stop-color="#141827"/><stop offset="1" stop-color="#0a0c15"/>
             </linearGradient>
             <clipPath id="hullclip"><path id="hullshape" d="M8 4 Q420 22 978 16 L954 76 Q920 98 840 100 L360 104 C190 102 70 64 8 4 Z"/></clipPath>
           </defs>
           <!-- swim platform -->
-          <rect x="940" y="70" width="58" height="7" rx="2" fill="#a77b4f"/>
+          <rect x="940" y="70" width="58" height="7" rx="2" fill="#2a2f45"/>
           <!-- bow pulpit + stern pushpit + lifeline (mostly behind the cabin) -->
-          <g fill="none" stroke="#dfe4ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g fill="none" stroke="#8a93b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M10 4 L18 -18 L110 -14 L112 8"/>
             <path d="M976 16 L972 -8 L880 -6 L882 14"/>
             <line x1="110" y1="-14" x2="880" y2="-6"/>
@@ -590,19 +685,19 @@
           <use href="#hullshape" fill="url(#hullg)"/>
           <g clip-path="url(#hullclip)">
             <!-- teak toe-rail / sheer -->
-            <path d="M8 4 Q420 22 978 16" fill="none" stroke="#b88a5a" stroke-width="5"/>
+            <path d="M8 4 Q420 22 978 16" fill="none" stroke="#00e5ff" stroke-width="3"/>
             <!-- navy cove stripe + gold pinstripe -->
-            <rect x="0" y="27" width="1000" height="9" fill="#1d2a4a"/>
-            <rect x="0" y="39" width="1000" height="2" fill="#c9a86a"/>
+            <rect x="0" y="29" width="1000" height="4" fill="#ff2bd6"/>
+            <rect x="0" y="38" width="1000" height="1.5" fill="#00e5ff" opacity=".6"/>
             <!-- tinted hull windows -->
-            <g fill="#1b2336" opacity=".9">
+            <g fill="#39f3ff" opacity=".9">
               <rect x="250" y="50" width="110" height="9" rx="4.5"/>
               <rect x="390" y="51" width="150" height="9" rx="4.5"/>
               <rect x="570" y="51" width="110" height="9" rx="4.5"/>
             </g>
             <!-- boot stripe + antifouling below the waterline -->
-            <rect x="0" y="84" width="1000" height="6" fill="#1d2a4a"/>
-            <rect x="0" y="92" width="1000" height="30" fill="#14203a"/>
+            <rect x="0" y="85" width="1000" height="3" fill="#ff2bd6"/>
+            <rect x="0" y="92" width="1000" height="30" fill="#05060c"/>
           </g>
           <!-- navigation lights: red (port) + green (starboard) at the bow, white at the stern -->
           <defs><filter id="navglow" x="-2" y="-2" width="5" height="5"><feGaussianBlur stdDeviation="4"/></filter></defs>
@@ -725,6 +820,7 @@
           vec3 D = vec3(dx, dy * COSP - SINP, dy * SINP + COSP);
           vec2 ground = vec2(tr * dx, tr * D.z);
           vec2 p = vec2(ground.x, ground.y - Z0) * KP;
+          vec2 base = p; // undistorted lake coords, for the neon grid
 
           // gentle pull toward the pointer
           vec2 m = (u_mouse - 0.5) * 0.6;
@@ -771,6 +867,14 @@
           col += c4 * spec * 0.6;
           col *= 0.86 + 0.28 * dot(n, normalize(vec3(-0.3, 1.0, 0.5))) - 0.14;
 
+
+          // neon grid on the water, drifting toward the camera
+          vec2 gq = base * 1.4 + vec2(0.0, u_time * 0.08);
+          vec2 gf = abs(fract(gq) - 0.5);
+          float gw = 0.018 * tr * tr;
+          float grid = 1.0 - smoothstep(0.5 - gw, 0.5, max(gf.x, gf.y));
+          grid = 1.0 - grid; // 1 on the lines
+          col += mix(c3, c4, 0.5) * grid * 0.32;
 
           // haze toward the far shore, a soft vignette near the camera
           float fog = smoothstep(1.12, 1.48, tr);
@@ -819,13 +923,13 @@
       const uGlowCol = gl.getUniformLocation(prog, 'u_glowCol');
 
       // water palettes; a wall hit cross-fades to the next one
-      const PALETTES = [
-        [[0.043, 0.055, 0.125], [0.231, 0.180, 0.478], [0.075, 0.478, 0.502], [0.945, 0.882, 0.780]], // ink / violet / teal
-        [[0.100, 0.040, 0.080], [0.550, 0.160, 0.280], [0.950, 0.450, 0.250], [1.000, 0.860, 0.660]], // sunset
-        [[0.010, 0.080, 0.120], [0.030, 0.300, 0.450], [0.100, 0.700, 0.650], [0.850, 0.980, 0.950]], // lagoon
-        [[0.030, 0.070, 0.050], [0.120, 0.320, 0.200], [0.550, 0.620, 0.250], [0.950, 0.920, 0.750]], // forest
-        [[0.090, 0.040, 0.120], [0.420, 0.140, 0.420], [0.880, 0.420, 0.620], [1.000, 0.880, 0.920]], // rose
-        [[0.020, 0.030, 0.080], [0.080, 0.140, 0.350], [0.750, 0.550, 0.200], [0.980, 0.920, 0.700]], // midnight gold
+      const PALETTES = [ // neon night-harbour schemes; a wall hit cycles them
+        [[0.020, 0.010, 0.050], [0.100, 0.030, 0.220], [0.000, 0.550, 0.700], [1.000, 0.250, 0.800]], // neon tokyo
+        [[0.030, 0.010, 0.010], [0.250, 0.060, 0.020], [0.950, 0.450, 0.050], [0.100, 0.850, 0.950]], // blade runner
+        [[0.000, 0.030, 0.020], [0.020, 0.160, 0.080], [0.100, 0.850, 0.350], [0.750, 1.000, 0.800]], // matrix
+        [[0.040, 0.000, 0.080], [0.300, 0.020, 0.350], [1.000, 0.200, 0.550], [1.000, 0.750, 0.200]], // synthwave
+        [[0.000, 0.020, 0.060], [0.020, 0.100, 0.280], [0.150, 0.450, 1.000], [0.800, 0.950, 1.000]], // ice
+        [[0.030, 0.000, 0.060], [0.180, 0.020, 0.300], [0.700, 1.000, 0.100], [0.950, 0.300, 1.000]], // acid
       ];
       let palIdx = 0;
       let palFrom = PALETTES[0], palTo = PALETTES[0], palStart = -10;
@@ -1217,7 +1321,7 @@
       const wrap = document.querySelector('.boat-wrap');
       const cardEl = document.querySelector('.card'), hullEl = document.querySelector('.hull');
       const boats = [...document.querySelectorAll('.buoy')].map((el, i) => ({
-        el, i, x: 0, y: 0, vx: 0, vy: 0, a: [2.6, 3.9, 0.5][i] || Math.random() * 6.28, sp: 30 + i * 7, paused: false,
+        el, i, x: 0, y: 0, vx: 0, vy: 0, a: [2.6, 3.9, 0.5][i] || Math.random() * 6.28, sp: 52 + i * 8, paused: false,
       }));
       boats.forEach((b) => {
         const stop = () => { b.paused = true; };
@@ -1260,8 +1364,8 @@
         if (!roaming) {
           roaming = true;
           boats.forEach((b) => {
-            b.x = W * 0.84 - (b.i % 2) * 70;
-            b.y = H * (0.16 + 0.28 * b.i);
+            b.x = W * [0.1, 0.82, 0.55][b.i % 3];
+            b.y = H * [0.78, 0.2, 0.86][b.i % 3];
             b.el.classList.add('roam');
           });
         }
@@ -1286,7 +1390,18 @@
         for (const b of boats) {
           // each boat motors toward a slowly wandering heading at cruising
           // speed; after a knock it's thrown off course and eases back
-          b.a += Math.sin(t * 0.17 + b.i * 2.1) * 0.4 * dt;
+          // each boat sails toward a destination anywhere on the lake, then picks
+          // another; a little weave keeps the course from looking robotic
+          const w0 = b.el.offsetWidth, h0 = b.el.offsetHeight;
+          if (!b.goal || Math.hypot(b.goal.x - b.x, b.goal.y - b.y) < 60 || t > b.goalBy) {
+            b.goal = { x: Math.random() * (W - w0), y: 40 + Math.random() * (H - h0 - 60) };
+            b.goalBy = t + 25;
+          }
+          let want = Math.atan2((b.goal.y - b.y) / 0.55, b.goal.x - b.x);
+          want += Math.sin(t * 0.6 + b.i * 2) * 0.35;
+          let da = want - b.a;
+          da = Math.atan2(Math.sin(da), Math.cos(da));
+          b.a += da * Math.min(1, dt * 0.9);
           const cruise = b.paused ? 0 : b.sp;
           const k = Math.min(1, (b.paused ? 4 : 0.6) * dt);
           b.vx += (Math.cos(b.a) * cruise - b.vx) * k;
@@ -1295,26 +1410,13 @@
           b.y += b.vy * dt;
 
           const w = b.el.offsetWidth, h = b.el.offsetHeight;
-          if (b.x < 150) { b.x = 150; b.vx = Math.abs(b.vx) * E; }       // stay out of the dock
-          if (b.x > W - w - 12) { b.x = W - w - 12; b.vx = -Math.abs(b.vx) * E; }
-          if (b.y < 70) { b.y = 70; b.vy = Math.abs(b.vy) * E; }         // below the music button
-          if (b.y > H - h - 40) { b.y = H - h - 40; b.vy = -Math.abs(b.vy) * E; }
+          // free to roam the whole lake; just stay on screen
+          if (b.x < 4) { b.x = 4; b.vx = Math.abs(b.vx) * E; }
+          if (b.x > W - w - 4) { b.x = W - w - 4; b.vx = -Math.abs(b.vx) * E; }
+          if (b.y < 4) { b.y = 4; b.vy = Math.abs(b.vy) * E; }
+          if (b.y > H - h - 4) { b.y = H - h - 4; b.vy = -Math.abs(b.vy) * E; }
 
-          // bounce off the yacht (a moving rounded box)
-          const r = Math.min(w, h) * 0.45;
-          const cx = b.x + w / 2, cy = b.y + h / 2;
-          const px = Math.max(yl, Math.min(cx, yr)), py = Math.max(yt, Math.min(cy, yb));
-          let nx = cx - px, ny = cy - py, d = Math.hypot(nx, ny);
-          if (d < r) {
-            if (d < 0.01) { // centre got inside: leave by the nearest side
-              const o = [[cx - yl, -1, 0], [yr - cx, 1, 0], [cy - yt, 0, -1], [yb - cy, 0, 1]].sort((m, n) => m[0] - n[0])[0];
-              nx = o[1]; ny = o[2]; d = -o[0];
-            } else { nx /= d; ny /= d; }
-            b.x += nx * (r - d); b.y += ny * (r - d);
-            const rvn = (b.vx - yvx) * nx + (b.vy - yvy) * ny;
-            if (rvn < 0) { b.vx -= (1 + E) * rvn * nx; b.vy -= (1 + E) * rvn * ny; bump(cx - nx * r, cy - ny * r, rvn); }
-            b.a = Math.atan2(b.vy, b.vx);
-          }
+          // (they pass behind the yacht — it's nearer the camera — rather than bouncing off)
         }
 
         // boat-on-boat: equal-mass elastic-ish collisions along the line of centres
