@@ -71,49 +71,40 @@
       50%      { transform: translateY(-16px) rotate(1.4deg); }
     }
 
-    .mast {
+    /* rigging: aluminium mast, mainsail + jib, burgee — drawn in SVG */
+    .rig {
       position: absolute;
-      top: -158px;
-      left: 50%;
-      width: 6px;
-      height: 166px;
-      margin-left: -3px;
-      background: linear-gradient(#8a6a4d, #3a2a1e);
-      border-radius: 3px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: auto;
+      transform: translateY(calc(-100% + 10px));
+      overflow: visible;
       z-index: 0;
+      pointer-events: none;
     }
 
-    .sail {
-      position: absolute;
-      top: -142px;
-      left: calc(50% + 3px);
-      width: 150px;
-      height: 134px;
-      background: linear-gradient(105deg, #f6efdd, #e4d7ba 70%, #d5c4a1);
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    .rig .mainsail {
+      transform-box: fill-box;
       transform-origin: left bottom;
       animation: billow 4.5s ease-in-out infinite alternate;
-      box-shadow: inset -6px -8px 18px rgba(120, 95, 60, 0.25);
-      z-index: 0;
+    }
+
+    .rig .jib {
+      transform-box: fill-box;
+      transform-origin: right bottom;
+      animation: billow 5.2s ease-in-out infinite alternate-reverse;
     }
 
     @keyframes billow {
       from { transform: scaleX(1); }
-      to   { transform: scaleX(1.08) skewY(1.2deg); }
+      to   { transform: scaleX(1.05) skewY(0.8deg); }
     }
 
-    .flag {
-      position: absolute;
-      top: -156px;
-      left: calc(50% + 3px);
-      width: 0;
-      height: 0;
-      border-left: 44px solid #c9584a;
-      border-top: 11px solid transparent;
-      border-bottom: 11px solid transparent;
+    .rig .burgee {
+      transform-box: fill-box;
       transform-origin: left center;
       animation: flutter 1.8s ease-in-out infinite alternate;
-      z-index: 0;
     }
 
     @keyframes flutter {
@@ -121,20 +112,15 @@
       to   { transform: scaleY(0.85) skewY(-3deg); }
     }
 
+    /* sleek white fibreglass hull: raked bow (left), swim platform (right) */
     .hull {
       position: relative;
-      width: 94%;
-      height: 64px;
-      margin: -8px auto 0;
-      background:
-        radial-gradient(circle at 22% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
-        radial-gradient(circle at 50% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
-        radial-gradient(circle at 78% 42%, #f3e2c0 0 7px, #4a3627 8px 9px, transparent 10px),
-        repeating-linear-gradient(180deg, #6b4f3a 0 14px, #52392a 14px 16px),
-        linear-gradient(#6b4f3a, #2e2118);
-      border-top: 6px solid #8a6a4d;
-      border-radius: 0 0 200px 200px / 0 0 130px 130px;
-      box-shadow: inset 0 12px 22px rgba(0, 0, 0, 0.4), 0 6px 14px rgba(4, 7, 18, 0.5);
+      display: block;
+      width: 112%;
+      height: auto;
+      margin: -10px 0 0 -6%;
+      overflow: visible;
+      filter: drop-shadow(0 8px 14px rgba(4, 7, 18, 0.5));
     }
 
     /* --- the goal ----------------------------------------------------- */
@@ -361,6 +347,7 @@
       .card { padding: 38px 26px 30px; }
       .card p { font-size: 1.12rem; }
       #hint { display: none; }
+      .hull { width: 106%; margin-left: -3%; }
     }
   </style>
 </head>
@@ -385,9 +372,32 @@
   <div class="page">
     <div class="boat-wrap">
       <div class="boat">
-        <div class="mast"></div>
-        <div class="sail"></div>
-        <div class="flag"></div>
+        <svg class="rig" viewBox="0 0 640 220" aria-hidden="true">
+          <defs>
+            <linearGradient id="mastg" x1="0" x2="1">
+              <stop offset="0" stop-color="#9aa3ad"/><stop offset=".5" stop-color="#eef1f4"/><stop offset="1" stop-color="#7d8690"/>
+            </linearGradient>
+            <linearGradient id="sailg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbf8f1"/><stop offset=".7" stop-color="#ebe3d0"/><stop offset="1" stop-color="#d9ccb0"/>
+            </linearGradient>
+          </defs>
+          <!-- standing rigging -->
+          <line x1="330" y1="8" x2="6" y2="222" stroke="#c9ced6" stroke-width="1.2" opacity=".8"/>
+          <line x1="330" y1="8" x2="634" y2="222" stroke="#c9ced6" stroke-width="1.2" opacity=".8"/>
+          <line x1="312" y1="92" x2="348" y2="92" stroke="#c9ced6" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- jib (forward, to the bow on the left) -->
+          <path class="jib" d="M324 26 L34 220 Q180 214 306 200 Q330 110 324 26 Z" fill="url(#sailg)" opacity=".96"/>
+          <!-- mainsail (aft) with battens -->
+          <path class="mainsail" d="M335 16 Q470 108 556 204 L335 204 Z" fill="url(#sailg)"/>
+          <g stroke="#cbbf9f" stroke-width="1" opacity=".7">
+            <line x1="335" y1="62" x2="398" y2="60"/><line x1="335" y1="108" x2="448" y2="106"/><line x1="335" y1="154" x2="500" y2="152"/>
+          </g>
+          <!-- mast + boom -->
+          <rect x="327" y="6" width="6" height="214" rx="2" fill="url(#mastg)"/>
+          <rect x="330" y="202" width="232" height="6" rx="3" fill="#2c3448"/>
+          <!-- burgee at the masthead -->
+          <polygon class="burgee" points="333,4 374,12 333,20" fill="#c9584a"/>
+        </svg>
         <main class="card">
       <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
       <p>For my professional interests, check out my <a href="https://www.linkedin.com/in/shikhar-sehgal1/" target="_blank" rel="noopener">LinkedIn</a>.</p>
@@ -398,7 +408,39 @@
 
           <div class="made-in">Made in Mumbai &bull; Hong Kong &bull; Chicago</div>
         </main>
-        <div class="hull"></div>
+        <svg class="hull" viewBox="0 0 1000 112" aria-hidden="true">
+          <defs>
+            <linearGradient id="hullg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffffff"/><stop offset=".75" stop-color="#e6eaf0"/><stop offset="1" stop-color="#c7ceda"/>
+            </linearGradient>
+            <clipPath id="hullclip"><path id="hullshape" d="M8 4 Q420 22 978 16 L954 76 Q920 98 840 100 L360 104 C190 102 70 64 8 4 Z"/></clipPath>
+          </defs>
+          <!-- swim platform -->
+          <rect x="940" y="70" width="58" height="7" rx="2" fill="#a77b4f"/>
+          <!-- bow pulpit + stern pushpit + lifeline (mostly behind the cabin) -->
+          <g fill="none" stroke="#dfe4ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 4 L18 -18 L110 -14 L112 8"/>
+            <path d="M976 16 L972 -8 L880 -6 L882 14"/>
+            <line x1="110" y1="-14" x2="880" y2="-6"/>
+          </g>
+          <use href="#hullshape" fill="url(#hullg)"/>
+          <g clip-path="url(#hullclip)">
+            <!-- teak toe-rail / sheer -->
+            <path d="M8 4 Q420 22 978 16" fill="none" stroke="#b88a5a" stroke-width="5"/>
+            <!-- navy cove stripe + gold pinstripe -->
+            <rect x="0" y="27" width="1000" height="9" fill="#1d2a4a"/>
+            <rect x="0" y="39" width="1000" height="2" fill="#c9a86a"/>
+            <!-- tinted hull windows -->
+            <g fill="#1b2336" opacity=".9">
+              <rect x="250" y="50" width="110" height="9" rx="4.5"/>
+              <rect x="390" y="51" width="150" height="9" rx="4.5"/>
+              <rect x="570" y="51" width="110" height="9" rx="4.5"/>
+            </g>
+            <!-- boot stripe + antifouling below the waterline -->
+            <rect x="0" y="84" width="1000" height="6" fill="#1d2a4a"/>
+            <rect x="0" y="92" width="1000" height="30" fill="#14203a"/>
+          </g>
+        </svg>
       </div>
       <div class="wake"></div>
     </div>
@@ -414,6 +456,7 @@
     const ripples = [];           // {x, y, t, s} in shader space
     let addRipple = () => {};     // bound once GL is ready
     let shaderTime = () => 0;
+    let nextWaterColor = () => {}; // bound once GL is ready
 
     (function () {
       const canvas = document.getElementById('fluid');
@@ -431,6 +474,7 @@
         uniform float u_time;
         uniform vec2 u_mouse;
         uniform vec4 u_rip[${NRIP}]; // x, y, birth time, strength
+        uniform vec3 u_c1, u_c2, u_c3, u_c4; // water palette
 
         float hash(vec2 p) {
           p = fract(p * vec2(123.34, 456.21));
@@ -492,10 +536,10 @@
           vec2 q, r;
           float f = pattern(p, t, q, r);
 
-          vec3 c1 = vec3(0.043, 0.055, 0.125); // deep ink
-          vec3 c2 = vec3(0.231, 0.180, 0.478); // violet
-          vec3 c3 = vec3(0.075, 0.478, 0.502); // teal
-          vec3 c4 = vec3(0.945, 0.882, 0.780); // cream
+          vec3 c1 = u_c1; // deep
+          vec3 c2 = u_c2; // body
+          vec3 c3 = u_c3; // swirl
+          vec3 c4 = u_c4; // highlight
 
           vec3 col = mix(c1, c2, smoothstep(0.15, 0.65, f));
           col = mix(col, c3, smoothstep(0.35, 0.9, length(q) * 0.8));
@@ -543,6 +587,30 @@
       const uTime = gl.getUniformLocation(prog, 'u_time');
       const uMouse = gl.getUniformLocation(prog, 'u_mouse');
       const uRip = gl.getUniformLocation(prog, 'u_rip');
+      const uC = ['u_c1', 'u_c2', 'u_c3', 'u_c4'].map((n) => gl.getUniformLocation(prog, n));
+
+      // water palettes; a wall hit cross-fades to the next one
+      const PALETTES = [
+        [[0.043, 0.055, 0.125], [0.231, 0.180, 0.478], [0.075, 0.478, 0.502], [0.945, 0.882, 0.780]], // ink / violet / teal
+        [[0.100, 0.040, 0.080], [0.550, 0.160, 0.280], [0.950, 0.450, 0.250], [1.000, 0.860, 0.660]], // sunset
+        [[0.010, 0.080, 0.120], [0.030, 0.300, 0.450], [0.100, 0.700, 0.650], [0.850, 0.980, 0.950]], // lagoon
+        [[0.030, 0.070, 0.050], [0.120, 0.320, 0.200], [0.550, 0.620, 0.250], [0.950, 0.920, 0.750]], // forest
+        [[0.090, 0.040, 0.120], [0.420, 0.140, 0.420], [0.880, 0.420, 0.620], [1.000, 0.880, 0.920]], // rose
+        [[0.020, 0.030, 0.080], [0.080, 0.140, 0.350], [0.750, 0.550, 0.200], [0.980, 0.920, 0.700]], // midnight gold
+      ];
+      let palIdx = 0;
+      let palFrom = PALETTES[0], palTo = PALETTES[0], palStart = -10;
+      const curPalette = () => {
+        const k = Math.min((now() - palStart) / 1.2, 1);
+        const e = k * k * (3 - 2 * k);
+        return palFrom.map((c, i) => c.map((v, j) => v + (palTo[i][j] - v) * e));
+      };
+      nextWaterColor = () => {
+        palFrom = curPalette();
+        palIdx = (palIdx + 1) % PALETTES.length;
+        palTo = PALETTES[palIdx];
+        palStart = now();
+      };
 
       const SCALE = 0.5; // render at half res; the pattern is soft anyway
       function resize() {
@@ -596,6 +664,7 @@
         gl.uniform1f(uTime, now());
         gl.uniform2f(uMouse, smX, smY);
         gl.uniform4fv(uRip, ripData);
+        curPalette().forEach((c, i) => gl.uniform3fv(uC[i], c));
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         requestAnimationFrame(frame);
       }
@@ -647,6 +716,7 @@
       addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
       let lastWake = 0;
+      let lastWallHit = 0;
       let last = performance.now();
       function step(now) {
         const dt = Math.min((now - last) / 1000, 0.05);
@@ -671,10 +741,17 @@
         y += vy * dt;
 
         // bounce off the viewport walls
-        if (x < R) { x = R; vx = Math.abs(vx) * 0.8; }
-        if (x > innerWidth - R) { x = innerWidth - R; vx = -Math.abs(vx) * 0.8; }
-        if (y < R) { y = R; vy = Math.abs(vy) * 0.8; }
-        if (y > innerHeight - R) { y = innerHeight - R; vy = -Math.abs(vy) * 0.8; }
+        // (a real hit — not idle drift resting on a wall — changes the water colour)
+        let hit = 0;
+        if (x < R) { x = R; hit = Math.max(hit, -vx); vx = Math.abs(vx) * 0.8; }
+        if (x > innerWidth - R) { x = innerWidth - R; hit = Math.max(hit, vx); vx = -Math.abs(vx) * 0.8; }
+        if (y < R) { y = R; hit = Math.max(hit, -vy); vy = Math.abs(vy) * 0.8; }
+        if (y > innerHeight - R) { y = innerHeight - R; hit = Math.max(hit, vy); vy = -Math.abs(vy) * 0.8; }
+        if (hit > 60 && now - lastWallHit > 400) {
+          lastWallHit = now;
+          nextWaterColor();
+          addRipple(x, y, 0.5);
+        }
 
         // GOAL: ball fully inside the net -> open email. The rect follows
         // the goal's bobbing animation, so the score zone bobs with it.
