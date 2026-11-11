@@ -13,7 +13,7 @@
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-text-size-adjust: 100%;
-      background: #050607; /* fallback while shader loads / if WebGL unavailable */
+      background: #0b0e1a; /* fallback while shader loads / if WebGL unavailable */
       overflow: hidden;
     }
 
@@ -154,7 +154,7 @@
     .critter.near { z-index: 3; } /* closer to the camera than the yacht: drawn in front */
     .critter svg { display: block; width: 100%; height: auto; overflow: visible; }
     .critter.flip svg { transform: scaleX(-1); }
-    .drop { position: fixed; z-index: 3; pointer-events: none; left: 0; top: 0; width: 3px; height: 3px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); }
+    .drop { position: fixed; z-index: 3; pointer-events: none; left: 0; top: 0; width: 3px; height: 3px; border-radius: 50%; background: rgba(230, 245, 255, 0.9); }
 
     @media (prefers-reduced-motion: reduce) {
       .sailcloth, .jib .cloth { animation: none !important; }
@@ -182,7 +182,7 @@
       width: 118px;
       height: 128px;
       transform: translateY(-50%);
-      border: 16px solid #1d2026;
+      border: 16px solid #1a1f3a;
       border-left-width: 22px;
       border-right: none;
       background: rgba(255, 255, 255, 0.015);
@@ -324,7 +324,7 @@
       width: 80px;
       height: 88px;
       display: block;
-      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 88'%3E%3Cline x1='40' y1='4' x2='40' y2='66' stroke='%238a9099' stroke-width='1.6'/%3E%3Cpath d='M15 13 Q40 8 65 13 Q68 36 64 59 Q40 55 16 59 Q12 36 15 13 Z' fill='%23121418' stroke='%233a3f48' stroke-width='1'/%3E%3Cline x1='13' y1='60' x2='67' y2='60' stroke='%235d636c' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M3 66 L77 66 L68 82 Q40 86 12 82 Z' fill='%23f2f3f5'/%3E%3Crect x='6' y='71' width='68' height='2' fill='%230d0f13'/%3E%3Ccircle cx='40' cy='4' r='4.5' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='40' cy='4' r='1.8' fill='%23ffffff'/%3E%3Ccircle cx='6' cy='63' r='4.5' fill='%23ff3b3b' opacity='.35'/%3E%3Ccircle cx='6' cy='63' r='1.8' fill='%23ff4a4a'/%3E%3Ccircle cx='74' cy='63' r='4.5' fill='%233dff8f' opacity='.3'/%3E%3Ccircle cx='74' cy='63' r='1.8' fill='%233dff8f'/%3E%3C/svg%3E") center / contain no-repeat;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 88'%3E%3Cline x1='40' y1='4' x2='40' y2='66' stroke='%238a9099' stroke-width='1.6'/%3E%3Cpath d='M15 13 Q40 8 65 13 Q68 36 64 59 Q40 55 16 59 Q12 36 15 13 Z' fill='%231b2046' stroke='%234a5384' stroke-width='1'/%3E%3Cline x1='13' y1='60' x2='67' y2='60' stroke='%235d636c' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M3 66 L77 66 L68 82 Q40 86 12 82 Z' fill='%23f2f3f5'/%3E%3Crect x='6' y='71' width='68' height='2' fill='%230d0f13'/%3E%3Ccircle cx='40' cy='4' r='4.5' fill='%23ffffff' opacity='.3'/%3E%3Ccircle cx='40' cy='4' r='1.8' fill='%23ffffff'/%3E%3Ccircle cx='6' cy='63' r='4.5' fill='%23ff3b3b' opacity='.35'/%3E%3Ccircle cx='6' cy='63' r='1.8' fill='%23ff4a4a'/%3E%3Ccircle cx='74' cy='63' r='4.5' fill='%233dff8f' opacity='.3'/%3E%3Ccircle cx='74' cy='63' r='1.8' fill='%233dff8f'/%3E%3C/svg%3E") center / contain no-repeat;
       filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
       text-decoration: none;
       pointer-events: auto;
@@ -478,7 +478,7 @@
       <path d="M5 20 C5 13.5 11 12.5 20 12.5 C28 12.5 33 15.5 36.5 20 C33 24.5 28 27.5 20 27.5 C11 27.5 5 26.5 5 20 Z" fill="#f2f3f5" stroke="#0d0f13" stroke-width="1"/>
       <path d="M8 20 C8 16 12.5 15.5 20 15.5 C26.5 15.5 30 17.2 32.5 20 C30 22.8 26.5 24.5 20 24.5 C12.5 24.5 8 24 8 20 Z" fill="#2a2e35"/>
       <!-- sail swung out on the boom -->
-      <path d="M22 20 Q15 11.5 6.5 12.5 Z" fill="#121418" stroke="#5d636c" stroke-width="0.6" stroke-linejoin="round"/>
+      <path d="M22 20 Q15 11.5 6.5 12.5 Z" fill="#1b2046" stroke="#4a5384" stroke-width="0.6" stroke-linejoin="round"/>
       <line x1="22" y1="20" x2="7" y2="13" stroke="#8a9099" stroke-width="0.9" stroke-linecap="round"/>
       <circle cx="22" cy="20" r="1.4" fill="#c9ced6"/>
       <!-- nav lights: red port, green starboard, white stern -->
@@ -499,11 +499,11 @@
           <svg class="sailcloth" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="canvasg" x1="0" y1="0" x2="1" y2="0.3">
-                <stop offset="0" stop-color="#1c1f25"/><stop offset=".45" stop-color="#101216"/><stop offset=".8" stop-color="#181a1f"/><stop offset="1" stop-color="#0c0d10"/>
+                <stop offset="0" stop-color="#232a52"/><stop offset=".5" stop-color="#151a38"/><stop offset=".85" stop-color="#1d2148"/><stop offset="1" stop-color="#11142c"/>
               </linearGradient>
             </defs>
             <path d="M1 9 L99 0.5 Q102.5 52 97 99.5 L1 99.5 Z" fill="url(#canvasg)"/>
-            <path d="M1 9 L99 0.5 Q102.5 52 97 99.5 L1 99.5 Z" fill="none" stroke="#3a3f48" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            <path d="M1 9 L99 0.5 Q102.5 52 97 99.5 L1 99.5 Z" fill="none" stroke="#4a5384" stroke-width="1" vector-effect="non-scaling-stroke"/>
             <!-- gaff (top spar) and boom -->
             <line x1="0" y1="9.3" x2="100" y2="0.3" stroke="#5d636c" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
             <line x1="0" y1="100" x2="103" y2="100" stroke="#5d636c" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
@@ -511,7 +511,7 @@
           <div class="mast"></div>
           <svg class="jib" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <line x1="100" y1="0" x2="6" y2="100" stroke="#7d848e" stroke-width="1" vector-effect="non-scaling-stroke" opacity=".9"/>
-            <path class="cloth" d="M96 7 L10 97 Q55 96 94 93 Q88 50 96 7 Z" fill="#17191e" stroke="#3a3f48" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            <path class="cloth" d="M96 7 L10 97 Q55 96 94 93 Q88 50 96 7 Z" fill="#1b2046" stroke="#4a5384" stroke-width="1" vector-effect="non-scaling-stroke"/>
           </svg>
       <p>I study Stats and CS at the <a href="https://uchicago.edu" target="_blank" rel="noopener">University of Chicago</a>.</p>
       <p>Right now I'm working on <a href="https://tassai.xyz/" target="_blank" rel="noopener">TASS</a> and <a href="https://parabolamarkets.xyz/" target="_blank" rel="noopener">Parabola Markets</a>, and I DJ at <a href="https://whpk.org/" target="_blank" rel="noopener">WHPK</a>.</p>
@@ -704,10 +704,10 @@
 
           vec3 col = mix(c1, c2, smoothstep(0.15, 0.65, f));
           col = mix(col, c3, smoothstep(0.35, 0.9, length(q) * 0.8));
-          col = mix(col, c4, smoothstep(0.6, 0.98, r.x) * 0.22);
+          col = mix(col, c4, smoothstep(0.55, 0.95, r.x) * 0.5);
 
           float edge = abs(f - 0.5);
-          col += c4 * 0.1 * smoothstep(0.05, 0.0, edge);
+          col += c4 * 0.2 * smoothstep(0.06, 0.0, edge);
 
           // 3D surface: small wind waves give a normal for lighting
           vec2 wp = p * 3.2 + vec2(u_time * 0.22, u_time * 0.15);
@@ -719,14 +719,14 @@
           float spec = pow(max(dot(reflect(-L, n), V), 0.0), 140.0);
           float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
           vec3 sky = mix(c2, c4, 0.45);
-          col = mix(col, sky * 0.5, clamp(fres * 1.4, 0.0, 0.35));
-          col += c4 * spec * 0.32;
+          col = mix(col, sky, clamp(fres * 1.5, 0.0, 0.4));
+          col += c4 * spec * 0.4;
           col *= 0.86 + 0.28 * dot(n, normalize(vec3(-0.3, 1.0, 0.5))) - 0.14;
 
 
           // haze toward the far shore, a soft vignette near the camera
           float fog = smoothstep(1.12, 1.48, tr);
-          col = mix(col, sky * 0.28, fog * 0.6);
+          col = mix(col, sky * 0.8, fog * 0.5);
           float vig = smoothstep(1.9, 0.5, length(vec2(ndc.x * 0.8, ndc.y + 0.15)));
           col *= mix(0.78, 1.0, vig);
 
@@ -771,13 +771,13 @@
       const uGlowCol = gl.getUniformLocation(prog, 'u_glowCol');
 
       // water palettes; a wall hit cross-fades to the next one
-      const PALETTES = [ // all near-black; a wall hit shifts the tint
-        [[0.016, 0.018, 0.024], [0.050, 0.056, 0.070], [0.085, 0.100, 0.125], [0.700, 0.730, 0.780]], // ink
-        [[0.010, 0.016, 0.040], [0.035, 0.060, 0.120], [0.070, 0.120, 0.210], [0.660, 0.740, 0.880]], // midnight
-        [[0.008, 0.026, 0.028], [0.025, 0.085, 0.090], [0.050, 0.160, 0.160], [0.660, 0.820, 0.800]], // deep teal
-        [[0.026, 0.022, 0.018], [0.080, 0.070, 0.060], [0.140, 0.120, 0.100], [0.820, 0.770, 0.700]], // graphite
-        [[0.028, 0.010, 0.014], [0.090, 0.028, 0.042], [0.160, 0.050, 0.070], [0.820, 0.700, 0.710]], // oxblood
-        [[0.018, 0.014, 0.036], [0.060, 0.046, 0.110], [0.110, 0.085, 0.190], [0.750, 0.720, 0.880]], // violet night
+      const PALETTES = [
+        [[0.043, 0.055, 0.125], [0.231, 0.180, 0.478], [0.075, 0.478, 0.502], [0.945, 0.882, 0.780]], // ink / violet / teal
+        [[0.100, 0.040, 0.080], [0.550, 0.160, 0.280], [0.950, 0.450, 0.250], [1.000, 0.860, 0.660]], // sunset
+        [[0.010, 0.080, 0.120], [0.030, 0.300, 0.450], [0.100, 0.700, 0.650], [0.850, 0.980, 0.950]], // lagoon
+        [[0.030, 0.070, 0.050], [0.120, 0.320, 0.200], [0.550, 0.620, 0.250], [0.950, 0.920, 0.750]], // forest
+        [[0.090, 0.040, 0.120], [0.420, 0.140, 0.420], [0.880, 0.420, 0.620], [1.000, 0.880, 0.920]], // rose
+        [[0.020, 0.030, 0.080], [0.080, 0.140, 0.350], [0.750, 0.550, 0.200], [0.980, 0.920, 0.700]], // midnight gold
       ];
       let palIdx = 0;
       let palFrom = PALETTES[0], palTo = PALETTES[0], palStart = -10;
@@ -1291,15 +1291,6 @@
         { k: 'whale', w: 240, h: 150, dist: 120, dur: 2600, pod: [1, 1], wt: 1.5, spout: true },
         { k: 'flyingfish', w: 34, h: 70, dist: 300, dur: 1100, pod: [4, 7], wt: 2 },
       ];
-      // render every creature as a monochrome silver silhouette
-      for (const k in SPRITES) {
-        SPRITES[k] = SPRITES[k].replace(/#([0-9a-f]{6})/gi, (m, h) => {
-          const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
-          const l = (0.3 * r + 0.59 * g + 0.11 * b) / 255;
-          const v = Math.round(255 * (0.42 + 0.5 * l));
-          return '#' + [v, v, Math.min(255, v + 6)].map((c) => c.toString(16).padStart(2, '0')).join('');
-        });
-      }
       const totalWt = SPECIES.reduce((a, b) => a + b.wt, 0);
       const pick = () => { let r = Math.random() * totalWt; for (const sp of SPECIES) if ((r -= sp.wt) < 0) return sp; return SPECIES[0]; };
       // keep leaps off the text (the sail); passing the hull or rig is fine
